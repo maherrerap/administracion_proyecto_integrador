@@ -113,7 +113,6 @@ public class ClienteMD {
     
     public boolean modificarCliente (Clientes cliente) {
         String sql = "UPDATE clientes SET " +
-                     "id_cliente = ?, " +
                      "cli_nombre = ? " +
                      "cli_ruc_ced = ? " +
                      "cli_telefono = ? " +
@@ -125,15 +124,14 @@ public class ClienteMD {
         
         try (Connection conn = ConexionPostgreSQL.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, cliente.getIdCliente());
-            ps.setString(2, cliente.getCliNombre());
-            ps.setString(3, cliente.getCliRucCed());
-            ps.setString(4, cliente.getCliTelefono());
-            ps.setString(5, cliente.getCliMail());
-            ps.setString(6, cliente.getCliCelular());
-            ps.setString(7, cliente.getCliDireccion());
-            ps.setString(8, cliente.getEstadoCli());
-            ps.setString(9, cliente.getIdCiudad());
+            ps.setString(1, cliente.getCliNombre());
+            ps.setString(2, cliente.getCliRucCed());
+            ps.setString(3, cliente.getCliTelefono());
+            ps.setString(4, cliente.getCliMail());
+            ps.setString(5, cliente.getCliCelular());
+            ps.setString(6, cliente.getCliDireccion());
+            ps.setString(7, cliente.getEstadoCli());
+            ps.setString(8, cliente.getIdCiudad());
             
             
             int filas = ps.executeUpdate();
@@ -225,5 +223,4 @@ public class ClienteMD {
         }
         return lista;
     }
-    
 }

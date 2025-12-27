@@ -3,7 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/Administracion_proyecto_integrador.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/dp/Inventarios/Productos.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/dp/Facturacion/Clientes.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/md/Facturacion/ClienteMD.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/md/Inventarios/ProductoMD.java</file>
         </group>
     </open-files>
 </project-private>
