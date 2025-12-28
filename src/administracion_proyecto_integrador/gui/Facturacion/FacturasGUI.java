@@ -428,9 +428,14 @@ public class FacturasGUI extends JFrame {
     }
 
     private void onVer(int row) {
-        // TODO: abrir vista detalle (cabecera + pro_x_fac)
+        // Obtener el ID de la factura de la fila seleccionada
         String idFactura = String.valueOf(modelo.getValueAt(row, 0));
-        System.out.println("Acción VER - fila " + row + " | idFactura=" + idFactura);
+
+        // Abrir la ventana DetalleFacturaGUI con el ID de la factura
+        SwingUtilities.invokeLater(() -> {
+            DetalleFacturaGUI detalleVentana = new DetalleFacturaGUI(idFactura);
+            detalleVentana.setVisible(true);
+        });
     }
 
     private void onEditar(int row) {

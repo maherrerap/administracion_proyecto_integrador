@@ -137,6 +137,15 @@ public class Clientes {
         return ClienteMD.obtenerListadoNombresClientes();
     }
     
+    // PARA CABECERA EN GUI
+    
+    // Método que llama a la capa MD
+    public static String obtenerNombreCliente(String idCliente) {
+        return ClienteMD.obtenerNombreCliente(idCliente);
+    }
+    
+    
+    
     /**
      * RF6.1: Creación Cliente
      * Recibe un objeto Cliente con los datos cargados desde la GUI

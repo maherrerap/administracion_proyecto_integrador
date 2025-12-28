@@ -132,6 +132,16 @@ public class Facturas {
     }
     
     /**
+     * 
+     * METODO PARA GUI PARA OBTENER LOS DATOS DE UNA FACTURA EN ESPECIFICO (CABECERA)
+     */
+
+    public static Facturas obtenerFacturaPorId(String idFactura) throws Exception {
+        return FacturasMD.obtenerFacturaPorId(idFactura);
+    }
+    
+    
+    /**
      * RF5.1: Grabar Factura
      * Recibe un objeto Factura con los datos cargados desde la GUI
      * y lo envia a la capa MD para que se inserte en la BD
@@ -171,6 +181,7 @@ public class Facturas {
         FacturasMD facturaMD = new FacturasMD();
         return facturaMD.obtenerFacturasPorParametro(idFactura, idCliente, facDescripcion);
     }
+    
     
     /**
      * METODO PARA COMBOBO DE FACTURACION

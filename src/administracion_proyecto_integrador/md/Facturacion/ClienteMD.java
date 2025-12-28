@@ -133,6 +133,34 @@ public class ClienteMD {
         }
         return lista;
     }
+    
+    // ----------------------------
+    // PARA CABECERA EN GUI
+    // ----------------------------
+
+    public static String obtenerNombreCliente(String idCliente) {
+        String sql = "SELECT cli_nombre FROM clientes WHERE id_cliente = ?";
+
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, idCliente);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("cli_nombre");
+                } else {
+                    System.out.println("No se encontró el cliente con ID: " + idCliente);
+                    return "Cliente no encontrado";
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("No se pudo completar la operación. Intente de nuevo.");
+            return "No se pudo completar la operación. Intente de nuevo.";
+        }
+    }
+    
     // -------------------------
     // RF6.2: MODIFICAR CLIENTE
     // -------------------------

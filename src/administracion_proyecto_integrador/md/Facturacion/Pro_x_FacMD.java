@@ -102,6 +102,29 @@ public class Pro_x_FacMD {
     }
     
     
+    // OBTENER NOMBRE DEL PRODUCTO
+
+    public static String obtenerNombreProducto(String idProducto) {
+        String sql = "SELECT pro_descripcion FROM productos WHERE id_producto = ?";
+
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, idProducto);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("pro_descripcion");
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("No se pudo completar la operación. Intente de nuevo.");
+        }
+        return "Producto no encontrado";
+    }
+    
+    
     // OBTENER EL PRECIO DEL DETALLE
     
     public static double obtenerPrecioDetalle(String idFactura, String idProducto) {

@@ -3,7 +3,6 @@ package administracion_proyecto_integrador.dp.Facturacion;
 
 
 import java.util.List;
-import java.util.ArrayList;
 
 import administracion_proyecto_integrador.md.Facturacion.Pro_x_FacMD;
 
@@ -121,7 +120,14 @@ public class Pro_x_Fac {
     public static List<Pro_x_Fac> obtenerDetallesFactura(String idFactura) throws Exception {
         return Pro_x_FacMD.obtenerListadoDetallesFactura(idFactura);
     }
-    
+
+    /**
+     * Obtener nombre del producto
+     */
+
+    public static String obtenerNombreProducto(String idProducto) throws Exception {
+        return Pro_x_FacMD.obtenerNombreProducto(idProducto);
+    }
     /**
      * Buscar un producto especifico en el detalle
      */
