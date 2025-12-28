@@ -32,7 +32,14 @@ public class ProductoMD {
         producto.setEstadoProd(rs.getString("estado_prod"));
         producto.setIdcategoria(rs.getString("id_categoria"));
         producto.setProImagen(rs.getString("pro_imagen"));
-        
+
+        // Agregar descripción de unidad de medida si existe en el ResultSet
+        try {
+            producto.setProUmVentaDescripcion(rs.getString("um_descripcion"));
+        } catch (SQLException e) {
+            producto.setProUmVentaDescripcion("Unidad"); // Valor por defecto si no existe
+        }
+
         return producto;
     }
     
@@ -42,7 +49,7 @@ public class ProductoMD {
     
     public boolean crearProducto (Productos producto) {
         String sql = "INSERT INTO productos" +
-                     "(id_producto, pro_descripcion, pro_um_compra, pro_um_venta, pro_valor_compra, pro_precio_venta, pro_saldo_iniical, pro_qty_ingresos, pro_qty_egresos, pro_qty_ajustes, pro_salod_final, estado_prod, id_categoria, pro_imagen)" +
+                     "(id_producto, pro_descripcion, pro_um_compra, pro_um_venta, pro_valor_compra, pro_precio_venta, pro_saldo_iniical, pro_qty_ingresos, pro_qty_egresos, pro_qty_ajustes, pro_saldo_final, estado_prod, id_categoria, pro_imagen)" +
                      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         try (Connection conn = ConexionPostgreSQL.getConnection();
                 PreparedStatement ps = conn.prepareStatement (sql)) {
@@ -89,15 +96,109 @@ public class ProductoMD {
             return false;
         }
     }
+    
+    
+    // ACTUALIZAR STOCK DEL PRODUCTO (incrementar egresos y recalcular saldo final)
+    public static boolean actualizarStockPorVenta(String idProducto, int cantidadVendida) {
+        // PRIMERO: Verificar stock disponible
+        String sqlVerificar = "SELECT pro_saldo_final FROM productos " +
+                              "WHERE id_producto = ? AND estado_prod = 'ACT'";
+
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement psVerif = conn.prepareStatement(sqlVerificar)) {
+
+            psVerif.setString(1, idProducto);
+            ResultSet rs = psVerif.executeQuery();
+
+            if (rs.next()) {
+                int stockActual = rs.getInt("pro_saldo_final");
+                if (stockActual < cantidadVendida) {
+                    System.out.println("ERROR: Stock insuficiente. Disponible: " + stockActual + ", Solicitado: " + cantidadVendida);
+                    return false;
+                }
+            } else {
+                System.out.println("ERROR: Producto no encontrado.");
+                return false;
+            }
+            rs.close();
+
+        } catch (SQLException e) {
+            System.out.println("Error al verificar stock: " + e.getMessage());
+            return false;
+        }
+
+        // SEGUNDO: Actualizar stock (FÓRMULA SIMPLIFICADA)
+        String sql = "UPDATE productos SET " +
+                     "pro_qty_egresos = pro_qty_egresos + ?, " +
+                     "pro_saldo_final = pro_saldo_final - ? " +
+                     "WHERE id_producto = ? AND estado_prod = 'ACT'";
+
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, cantidadVendida);     // Incrementa egresos
+            ps.setInt(2, cantidadVendida);     // Reduce saldo
+            ps.setString(3, idProducto);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.out.println("Error al actualizar stock: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // REVERTIR STOCK DEL PRODUCTO (decrementar egresos y recalcular saldo final)
+    public static boolean revertirStockPorVenta(String idProducto, int cantidadARevertir) {
+        // FÓRMULA SIMPLIFICADA: operación inversa
+        String sql = "UPDATE productos SET " +
+                     "pro_qty_egresos = pro_qty_egresos - ?, " +
+                     "pro_saldo_final = pro_saldo_final + ? " +
+                     "WHERE id_producto = ? AND estado_prod = 'ACT'";
+
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, cantidadARevertir);  // Reduce egresos
+            ps.setInt(2, cantidadARevertir);  // Aumenta saldo
+            ps.setString(3, idProducto);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.out.println("Error al revertir stock: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // AJUSTAR STOCK (cuando se modifica la cantidad de un detalle existente)
+    public static boolean ajustarStockPorCambio(String idProducto, int cantidadAnterior, int cantidadNueva) {
+        int diferencia = cantidadNueva - cantidadAnterior;
+
+        if (diferencia > 0) {
+            // Aumentó la cantidad, hay que descontar más stock
+            return actualizarStockPorVenta(idProducto, diferencia);
+        } else if (diferencia < 0) {
+            // Disminuyó la cantidad, hay que devolver stock
+            return revertirStockPorVenta(idProducto, Math.abs(diferencia));
+        }
+
+        return true; // No hubo cambio
+    }
+    
     // -------------------------
     // RF4.4.1: CONSULTA GENERAL
     // -------------------------
     
     public static List<Productos> obtenerListadoProductos () {
         List<Productos> lista = new ArrayList<>();
-        
-        String sql = "SELECT * FROM productos " + " WHERE estado_prod = 'ACT' " + "ORDER BY pro_descripcion";
-        
+
+        String sql = "SELECT p.*, um.um_descripcion " +
+                     "FROM productos p " +
+                     "LEFT JOIN unidades_medidas um ON p.pro_um_venta = um.id_unidad_medida " +
+                     "WHERE p.estado_prod = 'ACT' " +
+                     "ORDER BY p.pro_descripcion";
+
         try (Connection conn = ConexionPostgreSQL.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
@@ -109,6 +210,33 @@ public class ProductoMD {
             System.out.println("No se pudo completar la operación. Intente de nuevo.");
         }
         return lista;
+    }
+    
+    /**
+     * Obtener un producto específico por su ID
+     */
+    public static Productos obtenerProductoPorId(String idProducto) {
+        String sql = "SELECT p.*, um.um_descripcion " +
+                     "FROM productos p " +
+                     "LEFT JOIN unidades_medidas um ON p.pro_um_venta = um.id_unidad_medida " +
+                     "WHERE p.id_producto = ? AND p.estado_prod = 'ACT'";
+
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, idProducto);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapearProductos(rs);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener producto: " + e.getMessage());
+        }
+
+        return null;
     }
     
     // -------------------------
@@ -129,14 +257,14 @@ public class ProductoMD {
         try (Connection conn = ConexionPostgreSQL.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, producto.getIdProducto());
-            ps.setString(1, producto.getProDescripcion());
-            ps.setString(2, producto.getProUmCompra());
-            ps.setString(3, producto.getProUmVenta());
-            ps.setDouble(4, producto.getProValorCompra());
-            ps.setDouble(5, producto.getProPrecioVenta());
-            ps.setInt(6, producto.getProSaldoInicial());
-            ps.setString(7, producto.getIdcategoria());
-            ps.setString(8, producto.getIdProducto());
+            ps.setString(2, producto.getProDescripcion());
+            ps.setString(3, producto.getProUmCompra());
+            ps.setString(4, producto.getProUmVenta());
+            ps.setDouble(5, producto.getProValorCompra());
+            ps.setDouble(6, producto.getProPrecioVenta());
+            ps.setInt(7, producto.getProSaldoInicial());
+            ps.setString(8, producto.getIdcategoria());
+            ps.setString(9, producto.getIdProducto());
             
             int filas = ps.executeUpdate();
             return filas > 0;

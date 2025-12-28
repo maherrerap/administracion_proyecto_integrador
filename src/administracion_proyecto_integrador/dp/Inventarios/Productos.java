@@ -14,6 +14,7 @@ public class Productos {
     private String proDescripcion;
     private String proUmCompra;
     private String proUmVenta;
+    private String proUmVentaDescripcion;
     private double proValorCompra;
     private double proPrecioVenta;
     private int proSaldoInicial;
@@ -66,6 +67,10 @@ public class Productos {
 
     public String getProUmVenta() {
         return proUmVenta;
+    }
+    
+    public String getProUmVentaDescripcion() {
+        return proUmVentaDescripcion;
     }
 
     public double getProValorCompra() {
@@ -126,6 +131,10 @@ public class Productos {
         this.proUmVenta = proUmVenta;
     }
 
+    public void setProUmVentaDescripcion(String proUmVentaDescripcion) {
+        this.proUmVentaDescripcion = proUmVentaDescripcion;
+    }
+
     public void setProValorCompra(double proValorCompra) {
         this.proValorCompra = proValorCompra;
     }
@@ -177,6 +186,13 @@ public class Productos {
         return ProductoMD.obtenerListadoProductos();
     }
     
+    /**
+     * Obtener un producto específico por su ID
+     */
+    public static Productos obtenerProductoPorId(String idProducto) throws Exception {
+        return ProductoMD.obtenerProductoPorId(idProducto);
+    }   
+ 
     /**
      * RF6.1: Creación Producto
      * Recibe un objeto Productos con los datos cargados desde la GUI

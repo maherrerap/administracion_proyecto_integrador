@@ -21,25 +21,40 @@ public class CrearFacturaGUI extends JFrame {
     private JTextField txtFechaEmision;
     private JComboBox<String> cmbClientes;
     private JTextArea txtDescripcion;
-    private FacturasGUI ventanaPadre;
 
     public CrearFacturaGUI() {
-        this.ventanaPadre = null;
         setTitle("Crear Factura");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(1050, 750);
         setLocationRelativeTo(null);
+        
+        // MAXIMIZAR LA VENTANA AL INICIAR
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         // Panel principal
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(Color.WHITE);
         setContentPane(root);
 
-        // Contenido
+        // Contenido centrado con ancho máximo
+        JPanel contentWrapper = new JPanel(new GridBagLayout());
+        contentWrapper.setBackground(Color.WHITE);
+        
         JPanel content = new JPanel(new BorderLayout());
         content.setBackground(Color.WHITE);
         content.setBorder(new EmptyBorder(30, 40, 30, 40));
-        root.add(content, BorderLayout.CENTER);
+        content.setPreferredSize(new Dimension(900, 600));
+        content.setMaximumSize(new Dimension(1100, 800));
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(20, 20, 20, 20);
+        
+        contentWrapper.add(content, gbc);
+        root.add(contentWrapper, BorderLayout.CENTER);
 
         // Título con barra lateral
         content.add(crearTitulo(), BorderLayout.NORTH);
@@ -47,7 +62,6 @@ public class CrearFacturaGUI extends JFrame {
         // Formulario
         content.add(crearFormulario(), BorderLayout.CENTER);
     }
-
 
     private JComponent crearTitulo() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -159,6 +173,7 @@ public class CrearFacturaGUI extends JFrame {
 
         JButton btnSalir = new JButton("Salir");
         JButton btnCrear = new JButton("Crear");
+        
         btnCrear.setBackground(NAVY_BTN);
         btnCrear.setForeground(Color.WHITE);
         btnCrear.setFont(new Font("SansSerif", Font.BOLD, 14));
@@ -242,14 +257,11 @@ public class CrearFacturaGUI extends JFrame {
 
     private void cargarClientes() {
         try {
-            // Limpiar combo
             cmbClientes.removeAllItems();
             cmbClientes.addItem("Seleccione el cliente");
             
-            // Obtener clientes activos desde ClientesJava (DP)
             List<Clientes> listaClientes = Clientes.obtenerClientesActivos();
             
-            // Llenar el combo con formato: "ID - Nombre"
             for (Clientes cliente : listaClientes) {
                 String item = cliente.getIdCliente() + " - " + cliente.getCliNombre();
                 cmbClientes.addItem(item);
@@ -261,14 +273,12 @@ public class CrearFacturaGUI extends JFrame {
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
             
-            // En caso de error, dejar solo la opción por defecto
             cmbClientes.removeAllItems();
             cmbClientes.addItem("Seleccione el cliente");
         }
     }
 
     private void crearFactura() {
-        // Validaciones básicas del formulario
         if (txtNumFactura.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this, 
                 "Debe ingresar el número de factura", 
@@ -294,36 +304,24 @@ public class CrearFacturaGUI extends JFrame {
         }
 
         try {
-            // Crear objeto Factura
             Facturas nuevaFactura = new Facturas();
             nuevaFactura.setIdFactura(txtNumFactura.getText().trim());
 
-            // Extraer solo el ID del cliente del combo (formato: "CLI-0001 - Nombre")
             String clienteSeleccionado = (String) cmbClientes.getSelectedItem();
             String idCliente = clienteSeleccionado.split(" - ")[0].trim();
             nuevaFactura.setIdCliente(idCliente);
 
             nuevaFactura.setFacDescripcion(txtDescripcion.getText().trim());
-
-            // Establecer la fecha de emisión actual
             nuevaFactura.setFacFechaHora(LocalDate.now());
-
-            // La fecha de pago se establece como null por ahora
             nuevaFactura.setFacFechaPago(null);
-
-            // Establecer estado como ACT (Activo)
             nuevaFactura.setEstadoFac("ACT");
-
-            // Inicializar valores monetarios (puedes ajustar según tu lógica)
             nuevaFactura.setFacSubtotal(0.0);
             nuevaFactura.setFacIva(0.0);
-            nuevaFactura.setFacTotal(0.01); // Valor mínimo para pasar validación V10
+            nuevaFactura.setFacTotal(0.01);
 
-            // VALIDAR antes de guardar
             List<ErrorValidacion> errores = nuevaFactura.verificarFac();
 
             if (!errores.isEmpty()) {
-                // Construir mensaje con todos los errores
                 StringBuilder mensaje = new StringBuilder("Se encontraron los siguientes errores:\n\n");
                 for (ErrorValidacion error : errores) {
                     mensaje.append("• ").append(error.getMensaje()).append("\n");
@@ -336,7 +334,6 @@ public class CrearFacturaGUI extends JFrame {
                 return;
             }
 
-            // Si pasó todas las validaciones, grabar en la base de datos
             boolean exito = Facturas.grabarFactura(nuevaFactura);
 
             if (exito) {
@@ -345,10 +342,7 @@ public class CrearFacturaGUI extends JFrame {
                     "Éxito", 
                     JOptionPane.INFORMATION_MESSAGE);
 
-                // Limpiar formulario
                 limpiarFormulario();
-                
-                // Cerrar ventana
                 dispose();
                 
                 SwingUtilities.invokeLater(() -> new FacturasGUI().setVisible(true));
@@ -370,29 +364,8 @@ public class CrearFacturaGUI extends JFrame {
     
     private void limpiarFormulario() {
         txtNumFactura.setText("");
-        // La fecha de emisión se mantiene como fecha actual
         cmbClientes.setSelectedIndex(0);
         txtDescripcion.setText("");
-    }
-    
-    
-    // ---------------------------
-    // LISTENERS (STUBS)
-    // ---------------------------
-
-    private void onMenuPrincipal() {
-        // TODO: conectar navegación
-        System.out.println("Click: Menú Principal");
-    }
-
-    private void onAdministracion() {
-        // TODO: conectar navegación
-        System.out.println("Click: Administración");
-    }
-
-    private void onSalir() {
-        // TODO: confirmar y cerrar sesión
-        System.out.println("Click: Salir");
     }
 
     public static void main(String[] args) {

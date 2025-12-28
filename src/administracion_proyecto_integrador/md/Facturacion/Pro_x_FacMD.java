@@ -155,25 +155,68 @@ public class Pro_x_FacMD {
     // ACTUALIZAR LA CANTIDAD Y EL SUBTOTAL
     
     public static boolean actualizarCantidadYSubtotal(String idFactura, String idProducto, int nuevaCantidad, double nuevoSubtotal) {
+        // Primero obtener la cantidad anterior para calcular la diferencia
+        int cantidadAnterior = obtenerCantidadActual(idFactura, idProducto);
+
         String sql =
             "UPDATE pro_x_fac SET " +
             "pxf_cantidad = ?, " +
             "pxf_subtotal = ? " +
             "WHERE id_factura = ? AND id_producto = ?";
 
-        try (Connection conn = ConexionPostgreSQL.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        Connection conn = null;
+        try {
+            conn = ConexionPostgreSQL.getConnection();
+            conn.setAutoCommit(false);
 
-            ps.setInt(1, nuevaCantidad);
-            ps.setDouble(2, nuevoSubtotal);
-            ps.setString(3, idFactura);
-            ps.setString(4, idProducto);
+            // 1. Actualizar el detalle
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, nuevaCantidad);
+                ps.setDouble(2, nuevoSubtotal);
+                ps.setString(3, idFactura);
+                ps.setString(4, idProducto);
 
-            return ps.executeUpdate() > 0;
+                int result = ps.executeUpdate();
+
+                if (result > 0) {
+                    // 2. Ajustar stock del producto
+                    boolean stockAjustado = administracion_proyecto_integrador.md.Inventarios.ProductoMD
+                            .ajustarStockPorCambio(idProducto, cantidadAnterior, nuevaCantidad);
+
+                    if (stockAjustado) {
+                        // 3. Actualizar cabecera
+                        actualizarTotalesCabecera(idFactura);
+
+                        conn.commit();
+                        return true;
+                    } else {
+                        conn.rollback();
+                        System.out.println("Error al ajustar stock del producto.");
+                        return false;
+                    }
+                }
+
+                conn.rollback();
+                return false;
+            }
 
         } catch (SQLException e) {
+            try {
+                if (conn != null) conn.rollback();
+            } catch (SQLException ex) {
+                System.out.println("Error al revertir transacción: " + ex.getMessage());
+            }
             System.out.println("No se pudo completar la operación. Intente de nuevo.");
             return false;
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar conexión: " + e.getMessage());
+            }
         }
     }
     
@@ -220,27 +263,120 @@ public class Pro_x_FacMD {
     }
     
     // CREAR DETALLE
+    // PARA ACTUALIZAR LA CABECERA
     
+    // CALCULAR TOTALES DE LA FACTURA A PARTIR DE LOS DETALLES
+    
+    private static boolean actualizarTotalesCabecera(String idFactura) {
+        // Primero calculamos el subtotal sumando todos los detalles
+        String sqlCalcular = "SELECT COALESCE(SUM(pxf_subtotal), 0) as total_subtotal " +
+                           "FROM pro_x_fac " +
+                           "WHERE id_factura = ? AND estado_pxf = 'APR'";
+        
+        // NOTA: Ajusta estos nombres de campos según tu estructura de base de datos
+        // Los campos comunes son: fac_subtotal, fac_iva, fac_total
+        // El porcentaje de IVA puede variar (15%, 12%, etc.)
+        String sqlActualizar = "UPDATE facturas SET " +
+                             "fac_subtotal = ?, " +
+                             "fac_iva = ?, " +
+                             "fac_total = ? " +
+                             "WHERE id_factura = ?";
+        
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement psCalc = conn.prepareStatement(sqlCalcular)) {
+            
+            psCalc.setString(1, idFactura);
+            
+            try (ResultSet rs = psCalc.executeQuery()) {
+                if (rs.next()) {
+                    double subtotal = rs.getDouble("total_subtotal");
+                    
+                    // Calcula el IVA (ajusta el porcentaje según tu país/sistema)
+                    // Ejemplo: Ecuador = 15%, otros países = 12%, 19%, etc.
+                    double porcentajeIVA = 0.15; // 15%
+                    double iva = subtotal * porcentajeIVA;
+                    double total = subtotal + iva;
+                    
+                    // Actualizar la cabecera
+                    try (PreparedStatement psUpdate = conn.prepareStatement(sqlActualizar)) {
+                        psUpdate.setDouble(1, subtotal);
+                        psUpdate.setDouble(2, iva);
+                        psUpdate.setDouble(3, total);
+                        psUpdate.setString(4, idFactura);
+                        
+                        return psUpdate.executeUpdate() > 0;
+                    }
+                }
+            }
+            
+        } catch (SQLException e) {
+            System.out.println("Error al actualizar totales de cabecera: " + e.getMessage());
+            return false;
+        }
+        
+        return false;
+    }
+    
+    // REGISTRAR DETALLE COMPLETO
     public static boolean registrarDetalle(Pro_x_Fac detalle) {
         String sql = "INSERT INTO pro_x_fac (id_factura, id_producto, "
                 + "pxf_cantidad, pxf_precio, pxf_subtotal, estado_pxf) "
                 + "VALUES (?,?,?,?,?,?)";
-        
-        try (Connection conn = ConexionPostgreSQL.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, detalle.getIdFactura());
-            ps.setString(2, detalle.getIdProducto());
-            ps.setInt(3, detalle.getPxfCantidad());
-            ps.setDouble(4, detalle.getPxfPrecio());
-            ps.setDouble(5, detalle.getPxfSubtotal());
-            ps.setString(6, detalle.getEstadoPxf());
+        Connection conn = null;
+        try {
+            conn = ConexionPostgreSQL.getConnection();
+            conn.setAutoCommit(false); // Iniciar transacción
 
-            return ps.executeUpdate() > 0;
+            // 1. Registrar el detalle
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, detalle.getIdFactura());
+                ps.setString(2, detalle.getIdProducto());
+                ps.setInt(3, detalle.getPxfCantidad());
+                ps.setDouble(4, detalle.getPxfPrecio());
+                ps.setDouble(5, detalle.getPxfSubtotal());
+                ps.setString(6, detalle.getEstadoPxf());
+
+                int result = ps.executeUpdate();
+
+                if (result > 0) {
+                    // 2. Actualizar stock del producto
+                    boolean stockActualizado = administracion_proyecto_integrador.md.Inventarios.ProductoMD
+                            .actualizarStockPorVenta(detalle.getIdProducto(), detalle.getPxfCantidad());
+
+                    if (stockActualizado) {
+                        // 3. Actualizar totales de la cabecera
+                        actualizarTotalesCabecera(detalle.getIdFactura());
+
+                        conn.commit(); // Confirmar transacción
+                        return true;
+                    } else {
+                        conn.rollback(); // Revertir si falla actualización de stock
+                        System.out.println("Error al actualizar stock del producto.");
+                        return false;
+                    }
+                }
+                conn.rollback();
+                return false;
+            }
 
         } catch (SQLException e) {
+            try {
+                if (conn != null) conn.rollback();
+            } catch (SQLException ex) {
+                System.out.println("Error al revertir transacción: " + ex.getMessage());
+            }
             System.out.println("No se pudo completar la operación. Intente de nuevo.");
             return false;
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar conexión: " + e.getMessage());
+            }
         }
     }
     
@@ -279,18 +415,63 @@ public class Pro_x_FacMD {
     // Eliminar Producto de Detalle
     
     public static boolean eliminarDetalle(String idFactura, String idProducto) {
+        // Primero obtener la cantidad para revertir el stock
+        int cantidadARevertir = obtenerCantidadActual(idFactura, idProducto);
+
         String sql = "DELETE FROM pro_x_fac WHERE id_factura = ? "
                 + "AND id_producto = ? AND estado_pxf = 'APR'";
-        
-        try (Connection conn = ConexionPostgreSQL.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, idFactura);
-            ps.setString(2, idProducto);
-            
-            return ps.executeUpdate() > 0;
+
+        Connection conn = null;
+        try {
+            conn = ConexionPostgreSQL.getConnection();
+            conn.setAutoCommit(false);
+
+            // 1. Eliminar el detalle
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, idFactura);
+                ps.setString(2, idProducto);
+
+                int result = ps.executeUpdate();
+
+                if (result > 0) {
+                    // 2. Revertir stock del producto
+                    boolean stockRevertido = administracion_proyecto_integrador.md.Inventarios.ProductoMD
+                            .revertirStockPorVenta(idProducto, cantidadARevertir);
+
+                    if (stockRevertido) {
+                        // 3. Actualizar cabecera
+                        actualizarTotalesCabecera(idFactura);
+
+                        conn.commit();
+                        return true;
+                    } else {
+                        conn.rollback();
+                        System.out.println("Error al revertir stock del producto.");
+                        return false;
+                    }
+                }
+
+                conn.rollback();
+                return false;
+            }
+
         } catch(SQLException e) {
+            try {
+                if (conn != null) conn.rollback();
+            } catch (SQLException ex) {
+                System.out.println("Error al revertir transacción: " + ex.getMessage());
+            }
             System.out.println("No se pudo completar la operación. Intente de nuevo.");
             return false;
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar conexión: " + e.getMessage());
+            }
         }
     }
 }

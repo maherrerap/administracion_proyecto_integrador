@@ -1,6 +1,5 @@
 package administracion_proyecto_integrador.gui.Facturacion;
 
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.*;
@@ -17,7 +16,6 @@ public class FacturasGUI extends JFrame {
     // Colores similares a la captura
     private static final Color NAVY = new Color(8, 26, 43);
     private static final Color NAVY_BTN = new Color(14, 33, 55);
-
     private static final Color AZUL_VER = new Color(30, 86, 198);
     private static final Color NARANJA_EDITAR = new Color(244, 150, 30);
     private static final Color ROJO_INH = new Color(217, 64, 64);
@@ -36,8 +34,10 @@ public class FacturasGUI extends JFrame {
     public FacturasGUI() {
         setTitle("Catálogo de Facturas");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(980, 650);
         setLocationRelativeTo(null);
+        
+        // MAXIMIZAR LA VENTANA AL INICIAR
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         // Layout principal
         JPanel root = new JPanel(new BorderLayout());
@@ -105,7 +105,6 @@ public class FacturasGUI extends JFrame {
         JMenu menuInicio = crearMenu("Menú Principal");
         menuInicio.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                // Navegar al menú principal si existe
                 System.out.println("Navegar a Menú Principal");
             }
         });
@@ -155,7 +154,6 @@ public class FacturasGUI extends JFrame {
         menu.setBorderPainted(false);
         menu.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        // Popup con fondo oscuro
         JPopupMenu popup = menu.getPopupMenu();
         popup.setBackground(new Color(14, 33, 55));
         popup.setBorder(BorderFactory.createLineBorder(new Color(40, 60, 80), 1));
@@ -171,7 +169,6 @@ public class FacturasGUI extends JFrame {
         submenu.setBackground(new Color(14, 33, 55));
         submenu.setBorderPainted(false);
 
-        // Popup del submenú
         JPopupMenu popup = submenu.getPopupMenu();
         popup.setBackground(new Color(20, 40, 65));
         popup.setBorder(BorderFactory.createLineBorder(new Color(40, 60, 80), 1));
@@ -188,7 +185,6 @@ public class FacturasGUI extends JFrame {
         item.setBorderPainted(false);
         item.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        // Efecto hover
         item.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 item.setBackground(new Color(30, 86, 198));
@@ -198,11 +194,9 @@ public class FacturasGUI extends JFrame {
             }
         });
 
-        // Agregar el listener personalizado
         if (listener != null) {
             item.addActionListener(listener);
         } else {
-            // Listener por defecto
             item.addActionListener(e -> {
                 System.out.println("Click en: " + texto);
             });
@@ -224,7 +218,6 @@ public class FacturasGUI extends JFrame {
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         leftPanel.setOpaque(false);
 
-        // Barra azul vertical
         JPanel barra = new JPanel();
         barra.setBackground(AZUL_VER);
         barra.setPreferredSize(new Dimension(5, 30));
@@ -260,6 +253,7 @@ public class FacturasGUI extends JFrame {
 
         return wrapper;
     }
+    
     private JButton crearBotonSuperior(String texto) {
         JButton b = new JButton(texto);
         b.setBackground(NAVY_BTN);
@@ -280,7 +274,6 @@ public class FacturasGUI extends JFrame {
 
         modelo = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int row, int col) {
-                // Solo columnas de botones editables para capturar click
                 return col >= 8;
             }
         };
@@ -290,24 +283,20 @@ public class FacturasGUI extends JFrame {
         tabla.setFillsViewportHeight(true);
         tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Header
         JTableHeader th = tabla.getTableHeader();
         th.setFont(new Font("SansSerif", Font.BOLD, 12));
         th.setReorderingAllowed(false);
 
-        // Alineación números (Subtotal/IVA/Total)
         DefaultTableCellRenderer center = new DefaultTableCellRenderer();
         center.setHorizontalAlignment(SwingConstants.CENTER);
         tabla.getColumnModel().getColumn(5).setCellRenderer(center);
         tabla.getColumnModel().getColumn(6).setCellRenderer(center);
         tabla.getColumnModel().getColumn(7).setCellRenderer(center);
 
-        // Render + Editor para botones por columna
         configurarColumnaBoton(8, "Ver", AZUL_VER, (row) -> onVer(row));
         configurarColumnaBoton(9, "Editar", NARANJA_EDITAR, (row) -> onEditar(row));
         configurarColumnaBoton(10, "Inhabilitar", ROJO_INH, (row) -> onInhabilitar(row));
 
-        // Tamaños aproximados
         tabla.getColumnModel().getColumn(0).setPreferredWidth(80);
         tabla.getColumnModel().getColumn(1).setPreferredWidth(120);
         tabla.getColumnModel().getColumn(2).setPreferredWidth(220);
@@ -365,34 +354,13 @@ public class FacturasGUI extends JFrame {
         return b;
     }
 
-    // ---------------------------
-    // LISTENERS (STUBS)
-    // ---------------------------
-
-    private void onMenuPrincipal() {
-        // TODO: conectar navegación
-        System.out.println("Click: Menú Principal");
-    }
-
-    private void onAdministracion() {
-        // TODO: conectar navegación
-        System.out.println("Click: Administración");
-    }
-
-    private void onSalir() {
-        // TODO: confirmar y cerrar sesión
-        System.out.println("Click: Salir");
-    }
-    
-
     private void onConsultaPorParametro() {
-        // TODO: abrir modal/buscador
         System.out.println("Click: Consulta Por Parametro");
     }
 
     private void onCrearFactura() {
         new CrearFacturaGUI().setVisible(true);
-        this.dispose(); // Cerrar FacturasGUI actual
+        this.dispose();
     }
 
     private void onPrimeraPagina() {
@@ -428,45 +396,35 @@ public class FacturasGUI extends JFrame {
     }
 
     private void onVer(int row) {
-        // Obtener el ID de la factura de la fila seleccionada
         String idFactura = String.valueOf(modelo.getValueAt(row, 0));
-
-        // Abrir la ventana DetalleFacturaGUI con el ID de la factura
         SwingUtilities.invokeLater(() -> {
             DetalleFacturaGUI detalleVentana = new DetalleFacturaGUI(idFactura);
             detalleVentana.setVisible(true);
+            dispose(); // Cerrar la ventana de FacturasGUI
         });
     }
 
     private void onEditar(int row) {
-        // TODO: abrir formulario edición
         String idFactura = String.valueOf(modelo.getValueAt(row, 0));
         System.out.println("Acción EDITAR - fila " + row + " | idFactura=" + idFactura);
     }
 
     private void onInhabilitar(int row) {
-        // TODO: confirmar y anular (estado_fac/estado_pxf = 'ANU')
         String idFactura = String.valueOf(modelo.getValueAt(row, 0));
         System.out.println("Acción INHABILITAR - fila " + row + " | idFactura=" + idFactura);
     }
 
     private void cargarDatosMock() {
         try {
-            // Obtener TODAS las facturas desde el DP
             todasLasFacturas = Facturas.obtenerFacturas();
             totalRegistros = todasLasFacturas.size();
-
             totalPaginas = (int) Math.ceil((double) totalRegistros / registrosPorPagina);
-            if (totalPaginas == 0) totalPaginas = 1; // Mínimo 1 página
+            if (totalPaginas == 0) totalPaginas = 1;
 
-            // Asegurar que la página actual esté en rango válido
             if (paginaActual > totalPaginas) paginaActual = totalPaginas;
             if (paginaActual < 1) paginaActual = 1;
 
-            // Actualizar la tabla con los datos de la página actual
             actualizarTablaPaginada();
-
-            // Actualizar el label de paginación
             lblPagina.setText("Página " + paginaActual + " de " + totalPaginas);
 
         } catch (Exception e) {
@@ -475,20 +433,15 @@ public class FacturasGUI extends JFrame {
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
-
-            // En caso de error, mostrar página 1 de 1
             lblPagina.setText("Página 1 de 1");
         }
     }
     
     private void actualizarTablaPaginada() {
         modelo.setRowCount(0);
-
-        // Calcular índices de inicio y fin para la página actual
         int inicio = (paginaActual - 1) * registrosPorPagina;
         int fin = Math.min(inicio + registrosPorPagina, totalRegistros);
 
-        // Llenar la tabla solo con los registros de la página actual
         for (int i = inicio; i < fin; i++) {
             Facturas f = todasLasFacturas.get(i);
             modelo.addRow(new Object[]{
@@ -508,10 +461,6 @@ public class FacturasGUI extends JFrame {
     public void recargarDatos() {
         cargarDatosMock();
     }
-
-    // ---------------------------
-    // Helpers: Botones en JTable
-    // ---------------------------
 
     interface RowAction {
         void run(int row);
@@ -557,7 +506,7 @@ public class FacturasGUI extends JFrame {
             button.addActionListener(new ActionListener() {
                 @Override public void actionPerformed(ActionEvent e) {
                     clicked = true;
-                    fireEditingStopped(); // importante para que dispare getCellEditorValue()
+                    fireEditingStopped();
                 }
             });
         }
@@ -579,7 +528,6 @@ public class FacturasGUI extends JFrame {
         }
     }
 
-    // MAIN de prueba
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new FacturasGUI().setVisible(true));
     }

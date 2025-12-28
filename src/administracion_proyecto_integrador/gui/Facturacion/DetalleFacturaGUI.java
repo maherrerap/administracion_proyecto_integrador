@@ -232,7 +232,10 @@ public class DetalleFacturaGUI extends JFrame {
         btnVolver.setBackground(new Color(44, 62, 80));
         btnVolver.setForeground(Color.WHITE);
         btnVolver.setFocusPainted(false);
-        btnVolver.addActionListener(e -> dispose());
+        btnVolver.addActionListener(e -> {
+            new FacturasGUI().setVisible(true);
+            dispose();
+        });
         panelBotonVolver.add(btnVolver);
         panelInferior.add(panelBotonVolver, BorderLayout.SOUTH);
         
@@ -340,41 +343,15 @@ public class DetalleFacturaGUI extends JFrame {
     }
     
     private void registrarProducto() {
-        // Aquí deberías abrir un diálogo para seleccionar y agregar productos
-        String idProducto = JOptionPane.showInputDialog(this, "Ingrese el código del producto:");
-        
-        if (idProducto != null && !idProducto.trim().isEmpty()) {
-            String cantidadStr = JOptionPane.showInputDialog(this, "Ingrese la cantidad:");
-            
-            try {
-                int cantidad = Integer.parseInt(cantidadStr);
-                
-                boolean exito = Pro_x_Fac.agregarProducto(idFacturaActual, idProducto, cantidad);
-                
-                if (exito) {
-                    JOptionPane.showMessageDialog(this, 
-                        "Producto agregado exitosamente", 
-                        "Éxito", 
-                        JOptionPane.INFORMATION_MESSAGE);
-                    cargarDetalles();
-                } else {
-                    JOptionPane.showMessageDialog(this, 
-                        "No se pudo agregar el producto", 
-                        "Error", 
-                        JOptionPane.ERROR_MESSAGE);
-                }
-                
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this, 
-                    "La cantidad debe ser un número válido", 
-                    "Error", 
-                    JOptionPane.ERROR_MESSAGE);
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, 
-                    "Error: " + e.getMessage(), 
-                    "Error", 
-                    JOptionPane.ERROR_MESSAGE);
-            }
+        SeleccionProductoGUI dialog = new SeleccionProductoGUI(
+            (Frame) SwingUtilities.getWindowAncestor(this), 
+            idFacturaActual
+        );
+        dialog.setVisible(true);
+
+        // Si se agregó un producto, recargar la tabla
+        if (dialog.isProductoAgregado()) {
+            cargarDetalles();
         }
     }
     
