@@ -120,7 +120,8 @@ public class ClienteMD {
                      "cli_celular = ? " +
                      "cli_direccion = ? " +
                      "estado_cli = ? " +
-                     "id_ciudad = ? ";
+                     "id_ciudad = ? " +
+                     "WHERE id_cliente = ?";
         
         try (Connection conn = ConexionPostgreSQL.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -132,6 +133,7 @@ public class ClienteMD {
             ps.setString(6, cliente.getCliDireccion());
             ps.setString(7, cliente.getEstadoCli());
             ps.setString(8, cliente.getIdCiudad());
+            ps.setString(9, cliente.getIdCliente());
             
             
             int filas = ps.executeUpdate();
