@@ -3,7 +3,6 @@ package administracion_proyecto_integrador.dp.Facturacion;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.sql.Date;
 import java.time.LocalDate;
 
 import administracion_proyecto_integrador.md.Facturacion.FacturasMD;

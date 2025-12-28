@@ -140,23 +140,45 @@ public class FacturasMD {
     // ------------------------
     // RF5.2: MODIFICAR FACTURA
     // ------------------------
-    
-    public boolean modificarFactura (Facturas factura) { 
-        String sql = "UPDATE facturas SET fac_descripcion = ? WHERE id_factura = ?";
-        
+
+    public boolean modificarFactura(Facturas factura) {
+        String sql = "UPDATE facturas " +
+                     "SET fac_descripcion = ?, " +
+                     "    fac_subtotal = ?, " +
+                     "    fac_iva = ?, " +
+                     "    fac_fecha_pago = ?, " +
+                     "    id_cliente = ?, " +
+                     "    fac_total = ? " +
+                     "WHERE id_factura = ?";
+
         try (Connection conn = ConexionPostgreSQL.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, factura.getFacDescripcion());
-            ps.setString(2, factura.getIdFactura());
-            
+            ps.setDouble(2, factura.getFacSubtotal());
+            ps.setDouble(3, factura.getFacIva());
+
+            // Conversión correcta de LocalDate a java.sql.Date
+            if (factura.getFacFechaPago() != null) {
+                ps.setDate(4, java.sql.Date.valueOf(factura.getFacFechaPago()));
+            } else {
+                ps.setNull(4, java.sql.Types.DATE);
+            }
+
+            ps.setString(5, factura.getIdCliente());
+            ps.setDouble(6, factura.getFacTotal());
+            ps.setString(7, factura.getIdFactura());
+
             int filas = ps.executeUpdate();
             return filas > 0;
+
         } catch (SQLException e) {
             System.out.println("No se pudo completar la operación. Intente de nuevo.");
+            e.printStackTrace();
             return false;
         }
     }
+
     
     // ---------------------------
     // RF5.3: INHABILITAR FACTURA
