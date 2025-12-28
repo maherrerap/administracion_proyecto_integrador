@@ -3,10 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/dp/Inventarios/Productos.java</file>
-            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/dp/Facturacion/Clientes.java</file>
-            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/md/Facturacion/ClienteMD.java</file>
-            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/md/Inventarios/ProductoMD.java</file>
+            <file>file:/C:/Users/User/Desktop/Matheo/Ingeniería%20en%20Sistemas%20-%20quinto%20semestre/Ingeniería%20de%20Software/RDA3/administracion_proyecto_integrador/src/administracion_proyecto_integrador/dp/Facturacion/Clientes.java</file>
+            <file>file:/C:/Users/User/Desktop/Matheo/Ingeniería%20en%20Sistemas%20-%20quinto%20semestre/Ingeniería%20de%20Software/RDA3/administracion_proyecto_integrador/src/config.properties</file>
+            <file>file:/C:/Users/User/Desktop/Matheo/Ingeniería%20en%20Sistemas%20-%20quinto%20semestre/Ingeniería%20de%20Software/RDA3/administracion_proyecto_integrador/src/administracion_proyecto_integrador/conexion/ConexionPostgreSQL.java</file>
+            <file>file:/C:/Users/User/Desktop/Matheo/Ingeniería%20en%20Sistemas%20-%20quinto%20semestre/Ingeniería%20de%20Software/RDA3/administracion_proyecto_integrador/src/administracion_proyecto_integrador/conexion/ConfigReader.java</file>
         </group>
     </open-files>
 </project-private>
