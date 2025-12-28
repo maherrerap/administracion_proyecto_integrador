@@ -107,6 +107,32 @@ public class ClienteMD {
         return lista;
     }
     
+    
+    // ----------------------------
+    // PARA COMBOBOX DE FACTURACION
+    // ----------------------------
+    
+    public static List<Clientes> obtenerListadoNombresClientes () {
+        List<Clientes> lista = new ArrayList<>();
+
+        String sql = "SELECT id_cliente, cli_nombre FROM clientes " + 
+                     "WHERE estado_cli = 'ACT' " + 
+                     "ORDER BY cli_nombre";
+
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Clientes cliente = new Clientes();
+                cliente.setIdCliente(rs.getString("id_cliente"));
+                cliente.setCliNombre(rs.getString("cli_nombre"));
+                lista.add(cliente);
+            }
+        } catch (SQLException e) {
+            System.out.println("No se pudo completar la operación. Intente de nuevo.");
+        }
+        return lista;
+    }
     // -------------------------
     // RF6.2: MODIFICAR CLIENTE
     // -------------------------
