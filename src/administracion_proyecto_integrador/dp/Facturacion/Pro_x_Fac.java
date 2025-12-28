@@ -103,7 +103,7 @@ public class Pro_x_Fac {
     
     // 2. Validar Detalle
     
-    public static void validarDetalle(String idFactura, String idProducto, int cantidad) {
+    public static void verificarPxf(String idFactura, String idProducto, int cantidad) {
         if (idFactura == null || idFactura.trim().isEmpty())
             throw new IllegalArgumentException("El identificador es obligatorio.");
         if(idProducto == null || idProducto.trim().isEmpty())
@@ -127,7 +127,7 @@ public class Pro_x_Fac {
      */
     
     public static Pro_x_Fac obtenerDetalle(String idFactura, String idProducto) throws Exception {
-        validarDetalle(idFactura, idProducto, 1);
+        verificarPxf(idFactura, idProducto, 1);
         return Pro_x_FacMD.obtenerDetalle(idFactura, idProducto);
     }
     
@@ -138,7 +138,7 @@ public class Pro_x_Fac {
      */
     
     public static boolean agregarProducto(String idFactura, String idProducto, int cantidad) throws Exception {
-        validarDetalle(idFactura, idProducto, cantidad);
+        verificarPxf(idFactura, idProducto, cantidad);
         
         Pro_x_Fac existente = obtenerDetalle(idFactura, idProducto);
         
@@ -156,7 +156,7 @@ public class Pro_x_Fac {
             return Pro_x_FacMD.registrarDetalle(nuevo);
         } else {
             int nuevaCantidad = existente.getPxfCantidad() + cantidad;
-            return actualizarCantidad(idFactura, idProducto, nuevaCantidad);
+            return modificarPxf(idFactura, idProducto, nuevaCantidad);
         }
     }
     
@@ -174,7 +174,7 @@ public class Pro_x_Fac {
             throw new IllegalArgumentException("No existe el producto en el detalle.");
         
         int nuevaCantidad= detalle.getPxfCantidad() + paso;
-        return actualizarCantidad (idFactura, idProducto, nuevaCantidad);
+        return modificarPxf (idFactura, idProducto, nuevaCantidad);
     }
     
     /**
@@ -194,18 +194,18 @@ public class Pro_x_Fac {
         
         
         if (nuevaCantidad <= 0) {
-            return eliminarDetalle(idFactura, idProducto);
+            return eliminarPxf(idFactura, idProducto);
         }
         
-        return actualizarCantidad(idFactura, idProducto, nuevaCantidad);
+        return modificarPxf(idFactura, idProducto, nuevaCantidad);
     }
 
     /**
      * Actualizar la cantidad y recalcular el subtotal del producto
      */
     
-    public static boolean actualizarCantidad(String idFactura, String idProducto, int nuevaCantidad) throws Exception {
-        validarDetalle(idFactura, idProducto, nuevaCantidad);
+    public static boolean modificarPxf(String idFactura, String idProducto, int nuevaCantidad) throws Exception {
+        verificarPxf(idFactura, idProducto, nuevaCantidad);
         
         double precio = Pro_x_FacMD.obtenerPrecioDetalle(idFactura, idProducto);
         double nuevoSubtotal = calcularSubtotal(nuevaCantidad, precio);
@@ -217,11 +217,8 @@ public class Pro_x_Fac {
      * Eliminar Producto de Detalle
      * Como se trata del detalle, aqui si se realiza un borrado fisico del mismo.
      */
-    public static boolean eliminarDetalle(String idFactura, String idProducto) throws Exception {
-        validarDetalle(idFactura, idProducto, 1);
+    public static boolean eliminarPxf(String idFactura, String idProducto) throws Exception {
+        verificarPxf(idFactura, idProducto, 1);
         return Pro_x_FacMD.eliminarDetalle(idFactura, idProducto);
-    }
-    
-    
-    
+    }    
 }

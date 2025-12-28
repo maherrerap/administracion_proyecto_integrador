@@ -123,7 +123,8 @@ public class ProductoMD {
                      "pro_valor_compra = ? " +
                      "pro_precio_venta = ? " +
                      "pro_saldo_inicial = ? " +
-                     "id_categoria = ? ";
+                     "id_categoria = ? " +
+                     "WHERE id_producto = ?";
         
         try (Connection conn = ConexionPostgreSQL.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -135,6 +136,7 @@ public class ProductoMD {
             ps.setDouble(5, producto.getProPrecioVenta());
             ps.setInt(6, producto.getProSaldoInicial());
             ps.setString(7, producto.getIdcategoria());
+            ps.setString(8, producto.getIdProducto());
             
             int filas = ps.executeUpdate();
             return filas > 0;
