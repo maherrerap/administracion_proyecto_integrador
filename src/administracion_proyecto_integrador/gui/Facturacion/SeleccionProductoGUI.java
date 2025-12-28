@@ -7,14 +7,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.List;
-import javax.swing.event.DocumentListener;
 
 public class SeleccionProductoGUI extends JDialog {
     private JLabel lblCantidad; 
     private JComboBox<ProductoItem> cmbProductos;
     private JTextField txtPrecioVenta;
     private JTextField txtCantidad;
-    private JTextField txtSubtotal;
     private JButton btnAnadir;
     private JButton btnCancelar;
     
@@ -120,35 +118,24 @@ public class SeleccionProductoGUI extends JDialog {
         txtCantidad = new JTextField();
         txtCantidad.setFont(new Font("Arial", Font.PLAIN, 14));
         txtCantidad.setPreferredSize(new Dimension(0, 35));
+
         txtCantidad.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                calcularSubtotal();
                 validarFormulario();
             }
             public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                calcularSubtotal();
                 validarFormulario();
             }
             public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                calcularSubtotal();
                 validarFormulario();
             }
         });
+
+        panelFormulario.add(txtCantidad, gbc);
+
         panelFormulario.add(txtCantidad, gbc);
         
         // Subtotal calculado
-        gbc.gridy = 6; gbc.weightx = 0;
-        JLabel lblSubtotal = new JLabel("Subtotal calculado");
-        lblSubtotal.setFont(new Font("Arial", Font.PLAIN, 14));
-        panelFormulario.add(lblSubtotal, gbc);
-        
-        gbc.gridy = 7; gbc.weightx = 1;
-        txtSubtotal = new JTextField("$.....");
-        txtSubtotal.setFont(new Font("Arial", Font.PLAIN, 14));
-        txtSubtotal.setPreferredSize(new Dimension(0, 35));
-        txtSubtotal.setEditable(false);
-        txtSubtotal.setBackground(new Color(240, 240, 240));
-        panelFormulario.add(txtSubtotal, gbc);
         
         panelPrincipal.add(panelFormulario, BorderLayout.CENTER);
         
@@ -223,46 +210,15 @@ public class SeleccionProductoGUI extends JDialog {
             lblCantidad.setText("Cantidad a comprar (" + unidad + ")"); // NUEVO
         } else {
             txtPrecioVenta.setText("$.....");
-            txtSubtotal.setText("$.....");
             txtCantidad.setText("");
             txtCantidad.setEnabled(false);
             lblCantidad.setText("Cantidad a comprar"); // Volver al texto original
         }
 
-        calcularSubtotal();
+
         validarFormulario();
     }
     
-    private void calcularSubtotal() {
-        ProductoItem selected = (ProductoItem) cmbProductos.getSelectedItem();
-        
-        if (selected == null || selected.getId().isEmpty()) {
-            txtSubtotal.setText("$.....");
-            return;
-        }
-        
-        try {
-            String cantidadStr = txtCantidad.getText().trim();
-            
-            if (cantidadStr.isEmpty()) {
-                txtSubtotal.setText("$.....");
-                return;
-            }
-            
-            int cantidad = Integer.parseInt(cantidadStr);
-            
-            if (cantidad <= 0) {
-                txtSubtotal.setText("$.....");
-                return;
-            }
-            
-            double subtotal = selected.getPrecio() * cantidad;
-            txtSubtotal.setText("$ " + formatoDecimal.format(subtotal));
-            
-        } catch (NumberFormatException e) {
-            txtSubtotal.setText("$.....");
-        }
-    }
     
     private void validarFormulario() {
         ProductoItem selected = (ProductoItem) cmbProductos.getSelectedItem();
