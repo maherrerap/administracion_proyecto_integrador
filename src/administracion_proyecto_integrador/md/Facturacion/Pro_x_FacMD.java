@@ -505,4 +505,36 @@ public class Pro_x_FacMD {
             }
         }
     }
+    
+    /**
+     * Actualizar solo la cantidad del detalle sin tocar el stock
+     */
+    public static boolean actualizarCantidadDetalle(String idFactura, String idProducto, int nuevaCantidad) {
+        String sql = "UPDATE pro_x_fac SET " +
+                     "pxf_cantidad = ?, " +
+                     "pxf_subtotal = pxf_precio * ? " +
+                     "WHERE id_factura = ? AND id_producto = ? AND estado_pxf = 'APR'";
+
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, nuevaCantidad);
+            ps.setInt(2, nuevaCantidad);
+            ps.setString(3, idFactura);
+            ps.setString(4, idProducto);
+
+            int result = ps.executeUpdate();
+
+            // Actualizar totales de la cabecera
+            if (result > 0) {
+                actualizarTotalesCabecera(idFactura);
+            }
+
+            return result > 0;
+
+        } catch (SQLException e) {
+            System.out.println("Error al actualizar cantidad: " + e.getMessage());
+            return false;
+        }
+    }
 }

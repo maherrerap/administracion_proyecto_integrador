@@ -240,6 +240,33 @@ public class ProductoMD {
         return null;
     }
     
+    // --------------------------------------------
+    // METODO DE UTILIDAD: OBTENER STOCK DISPONIBLE
+    // --------------------------------------------
+    
+    public static int obtenerStockDisponible(String idProducto) {
+        String sql = "SELECT pro_saldo_final FROM productos " +
+                     "WHERE id_producto = ? AND estado_prod = 'ACT'";
+
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, idProducto);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("pro_saldo_final");
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener stock disponible: " + e.getMessage());
+        }
+
+        return 0;
+    }
+    
+    
     // -------------------------
     // RF4.2: MODIFICAR PRODUCTO
     // -------------------------

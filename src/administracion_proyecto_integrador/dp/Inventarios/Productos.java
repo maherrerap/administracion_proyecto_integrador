@@ -266,6 +266,13 @@ public class Productos {
         return ProductoMD.ajustarStockPorCambio(idProducto);
     }
     
+    /**
+     * Obtener stock disponible de un producto
+     */
+    public static int obtenerStockDisponible(String idProducto) throws Exception {
+        return ProductoMD.obtenerStockDisponible(idProducto);
+    }
+    
     // ===================== VALIDACIONES (verificarProd) =====================
 
     /** Representa un error de validación (Código + Mensaje) */

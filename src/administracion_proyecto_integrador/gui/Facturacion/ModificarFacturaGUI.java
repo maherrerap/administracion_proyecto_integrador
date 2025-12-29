@@ -36,6 +36,7 @@ public class ModificarFacturaGUI extends JFrame {
     
     // Botones
     private JButton btnActualizar;
+    private JButton btnSalir;
     
     // Variables de control
     private String idFacturaActual;
@@ -72,25 +73,37 @@ public class ModificarFacturaGUI extends JFrame {
         setSize(1200, 750);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
+
+        // Maximizar la ventana al abrir
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+
         setLayout(new BorderLayout());
-        
+
         // Panel principal con fondo blanco
         JPanel panelPrincipal = new JPanel(new BorderLayout(0, 0));
         panelPrincipal.setBackground(Color.WHITE);
         panelPrincipal.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
-        
+
         // Panel superior - Cabecera
         JPanel panelCabecera = crearPanelCabecera();
         panelPrincipal.add(panelCabecera, BorderLayout.NORTH);
-        
+
         // Panel central - Detalles
         JPanel panelDetalles = crearPanelDetalles();
         panelPrincipal.add(panelDetalles, BorderLayout.CENTER);
-        
-        // Panel inferior - Resumen
+
+        // Panel inferior - Resumen y Botón Salir
+        JPanel panelInferior = new JPanel(new BorderLayout());
+        panelInferior.setBackground(Color.WHITE);
+
         JPanel panelResumen = crearPanelResumen();
-        panelPrincipal.add(panelResumen, BorderLayout.SOUTH);
-        
+        panelInferior.add(panelResumen, BorderLayout.NORTH);
+
+        JPanel panelBotonSalir = crearPanelBotonSalir();
+        panelInferior.add(panelBotonSalir, BorderLayout.SOUTH);
+
+        panelPrincipal.add(panelInferior, BorderLayout.SOUTH);
+
         add(panelPrincipal, BorderLayout.CENTER);
     }
     
@@ -539,9 +552,10 @@ public class ModificarFacturaGUI extends JFrame {
         lblTotal.setText(String.format("$ %.2f", total));
     }
     
+
     public void incrementarCantidad() {
         int filaSeleccionada = tablaDetalles.getSelectedRow();
-        
+
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(this,
                 "Debe seleccionar un producto de la tabla",
@@ -549,36 +563,42 @@ public class ModificarFacturaGUI extends JFrame {
                 JOptionPane.WARNING_MESSAGE);
             return;
         }
-        
+
         try {
             String idProducto = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
             int cantidadActual = (int) modeloTabla.getValueAt(filaSeleccionada, 2);
-            
-            // Actualizar stock: descontar 1 unidad más
-            boolean stockActualizado = Productos.actualizarStockPorVenta(idProducto, 1);
-            
-            if (!stockActualizado) {
+            int nuevaCantidad = cantidadActual + 1;
+
+            // Verificar stock disponible REAL (sin actualizar nada aún)
+            int stockDisponible = Productos.obtenerStockDisponible(idProducto);
+            if (stockDisponible <= 0) {
                 JOptionPane.showMessageDialog(this,
                     "Stock insuficiente para incrementar la cantidad",
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
-            // Incrementar cantidad en la base de datos
-            boolean resultado = Pro_x_Fac.incrementarCantidad(idFacturaActual, idProducto, 1);
-            
-            if (resultado) {
-                cargarDetalles();
-            } else {
-                // Revertir el stock si falla la actualización
-                Productos.revertirStockPorVenta(idProducto, 1);
-                JOptionPane.showMessageDialog(this,
-                    "No se pudo incrementar la cantidad",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
+
+            // Buscar el detalle en memoria y actualizarlo
+            for (Pro_x_Fac detalle : detallesActuales) {
+                if (detalle.getIdProducto().equals(idProducto)) {
+                    double precioUnitario = detalle.getPxfPrecio();
+                    double nuevoSubtotal = nuevaCantidad * precioUnitario;
+
+                    // Actualizar objeto en memoria
+                    detalle.setPxfCantidad(nuevaCantidad);
+                    detalle.setPxfSubtotal(nuevoSubtotal);
+
+                    // Actualizar tabla visual
+                    modeloTabla.setValueAt(nuevaCantidad, filaSeleccionada, 2);
+                    modeloTabla.setValueAt(String.format("$ %.2f", nuevoSubtotal), filaSeleccionada, 4);
+
+                    break;
+                }
             }
-            
+
+            calcularTotales();
+
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
                 "Error al incrementar la cantidad: " + e.getMessage(),
@@ -586,10 +606,10 @@ public class ModificarFacturaGUI extends JFrame {
                 JOptionPane.ERROR_MESSAGE);
         }
     }
-    
+
     public void decrementarCantidad() {
         int filaSeleccionada = tablaDetalles.getSelectedRow();
-        
+
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(this,
                 "Debe seleccionar un producto de la tabla",
@@ -597,36 +617,41 @@ public class ModificarFacturaGUI extends JFrame {
                 JOptionPane.WARNING_MESSAGE);
             return;
         }
-        
+
         try {
-            String idProducto = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
             int cantidadActual = (int) modeloTabla.getValueAt(filaSeleccionada, 2);
-            
-            // Revertir stock: devolver 1 unidad
-            boolean stockRevertido = Productos.revertirStockPorVenta(idProducto, 1);
-            
-            if (!stockRevertido) {
+
+            if (cantidadActual <= 1) {
                 JOptionPane.showMessageDialog(this,
-                    "No se pudo actualizar el stock",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    "La cantidad mínima es 1. Use el botón 'Eliminar' para quitar el producto.",
+                    "Advertencia",
+                    JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            
-            // Decrementar cantidad en la base de datos
-            boolean resultado = Pro_x_Fac.decrementarCantidad(idFacturaActual, idProducto, 1);
-            
-            if (resultado) {
-                cargarDetalles();
-            } else {
-                // Revertir el cambio de stock si falla
-                Productos.actualizarStockPorVenta(idProducto, 1);
-                JOptionPane.showMessageDialog(this,
-                    "No se pudo decrementar la cantidad",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
+
+            String idProducto = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
+            int nuevaCantidad = cantidadActual - 1;
+
+            // Buscar el detalle en memoria y actualizarlo
+            for (Pro_x_Fac detalle : detallesActuales) {
+                if (detalle.getIdProducto().equals(idProducto)) {
+                    double precioUnitario = detalle.getPxfPrecio();
+                    double nuevoSubtotal = nuevaCantidad * precioUnitario;
+
+                    // Actualizar objeto en memoria
+                    detalle.setPxfCantidad(nuevaCantidad);
+                    detalle.setPxfSubtotal(nuevoSubtotal);
+
+                    // Actualizar tabla visual
+                    modeloTabla.setValueAt(nuevaCantidad, filaSeleccionada, 2);
+                    modeloTabla.setValueAt(String.format("$ %.2f", nuevoSubtotal), filaSeleccionada, 4);
+
+                    break;
+                }
             }
-            
+
+            calcularTotales();
+
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
                 "Error al decrementar la cantidad: " + e.getMessage(),
@@ -634,7 +659,7 @@ public class ModificarFacturaGUI extends JFrame {
                 JOptionPane.ERROR_MESSAGE);
         }
     }
-    
+
     public void eliminarProducto() {
         int filaSeleccionada = tablaDetalles.getSelectedRow();
 
@@ -662,21 +687,18 @@ public class ModificarFacturaGUI extends JFrame {
                     tablaDetalles.getCellEditor().stopCellEditing();
                 }
 
-                // Eliminar el detalle (esto ya maneja la reversión del stock internamente)
-                boolean resultado = Pro_x_Fac.eliminarPxf(idFacturaActual, idProducto);
+                // Remover de la lista en memoria
+                detallesActuales.removeIf(d -> d.getIdProducto().equals(idProducto));
 
-                if (resultado) {
-                    JOptionPane.showMessageDialog(this,
-                        "Detalle eliminado correctamente",
-                        "Botón eliminar producto opción si",
-                        JOptionPane.INFORMATION_MESSAGE);
-                    cargarDetalles();
-                } else {
-                    JOptionPane.showMessageDialog(this,
-                        "No se pudo eliminar el producto",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                }
+                // Remover de la tabla visual
+                modeloTabla.removeRow(filaSeleccionada);
+
+                calcularTotales();
+
+                JOptionPane.showMessageDialog(this,
+                    "Producto eliminado de la vista. Los cambios se aplicarán al presionar 'Actualizar Factura'.",
+                    "Información",
+                    JOptionPane.INFORMATION_MESSAGE);
 
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this,
@@ -686,7 +708,7 @@ public class ModificarFacturaGUI extends JFrame {
             }
         }
     }
-    
+
     private void actualizarFactura() {
         try {
             // Validar campos
@@ -697,7 +719,7 @@ public class ModificarFacturaGUI extends JFrame {
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
+
             if (txtDescripcion.getText().length() > 100) {
                 JOptionPane.showMessageDialog(this,
                     "La descripción excede la longitud permitida (máx. 100 caracteres)",
@@ -705,7 +727,7 @@ public class ModificarFacturaGUI extends JFrame {
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
+
             if (detallesActuales == null || detallesActuales.isEmpty()) {
                 JOptionPane.showMessageDialog(this,
                     "Debe haber al menos un producto en el detalle",
@@ -713,7 +735,7 @@ public class ModificarFacturaGUI extends JFrame {
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
+
             if (cmbCliente.getSelectedItem() == null) {
                 JOptionPane.showMessageDialog(this,
                     "Debe seleccionar un cliente",
@@ -722,37 +744,120 @@ public class ModificarFacturaGUI extends JFrame {
                 return;
             }
             
-            // Crear objeto Factura con los datos actualizados
+            // Validar fecha de pago
+            if (dcFechaPago.getDate() != null) {
+                // Obtener la factura original para comparar con fecha de emisión
+                Facturas facturaOriginal = Facturas.obtenerFacturaPorId(idFacturaActual);
+
+                if (facturaOriginal != null && facturaOriginal.getFacFechaHora() != null) {
+                    // Convertir fecha de pago seleccionada a LocalDate
+                    java.util.Date fechaUtil = dcFechaPago.getDate();
+                    LocalDate fechaPagoSeleccionada = new java.sql.Date(fechaUtil.getTime()).toLocalDate();
+
+                    // Obtener la fecha de emisión
+                    LocalDate fechaEmision = facturaOriginal.getFacFechaHora();
+
+                    // Validar que fecha de pago sea mayor o igual a fecha de emisión
+                    if (fechaPagoSeleccionada.isBefore(fechaEmision)) {
+                        JOptionPane.showMessageDialog(this,
+                            "La fecha de pago no puede ser anterior a la fecha de emisión\n" +
+                            "Fecha de emisión: " + fechaEmision.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "\n" +
+                            "Fecha de pago seleccionada: " + fechaPagoSeleccionada.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                            "Error de Validación",
+                            JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+            }
+
+            // PASO 1: Obtener los detalles originales de la BD para comparar
+            List<Pro_x_Fac> detallesOriginales = Pro_x_Fac.obtenerDetallesFactura(idFacturaActual);
+
+            // PASO 2: Identificar productos eliminados y revertir su stock
+            for (Pro_x_Fac original : detallesOriginales) {
+                boolean existe = false;
+                for (Pro_x_Fac actual : detallesActuales) {
+                    if (actual.getIdProducto().equals(original.getIdProducto())) {
+                        existe = true;
+                        break;
+                    }
+                }
+
+                // Si el producto original ya no existe, fue eliminado
+                if (!existe) {
+                    // Eliminar de la BD y revertir stock
+                    Pro_x_Fac.eliminarPxf(idFacturaActual, original.getIdProducto());
+                }
+            }
+
+            // PASO 3: Actualizar cantidades de productos modificados
+            for (Pro_x_Fac actual : detallesActuales) {
+                // Buscar el detalle original correspondiente
+                Pro_x_Fac original = null;
+                for (Pro_x_Fac orig : detallesOriginales) {
+                    if (orig.getIdProducto().equals(actual.getIdProducto())) {
+                        original = orig;
+                        break;
+                    }
+                }
+
+                if (original != null) {
+                    int cantidadOriginal = original.getPxfCantidad();
+                    int cantidadNueva = actual.getPxfCantidad();
+
+                    // Si cambió la cantidad
+                    if (cantidadOriginal != cantidadNueva) {
+                        int diferencia = cantidadNueva - cantidadOriginal;
+
+                        if (diferencia > 0) {
+                            // Incrementó: descontar más stock
+                            boolean stockActualizado = Productos.actualizarStockPorVenta(actual.getIdProducto(), diferencia);
+                            if (!stockActualizado) {
+                                JOptionPane.showMessageDialog(this,
+                                    "Stock insuficiente para el producto: " + actual.getIdProducto(),
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                                return;
+                            }
+                        } else {
+                            // Decrementó: devolver stock
+                            Productos.revertirStockPorVenta(actual.getIdProducto(), Math.abs(diferencia));
+                        }
+
+                        // Actualizar la cantidad en la BD
+                        Pro_x_Fac.actualizarCantidadDetalle(idFacturaActual, actual.getIdProducto(), cantidadNueva);
+                    }
+                }
+            }
+
+            // PASO 4: Actualizar cabecera de la factura
             Facturas facturaActualizada = new Facturas();
             facturaActualizada.setIdFactura(idFacturaActual);
             facturaActualizada.setFacDescripcion(txtDescripcion.getText().trim());
-            
-            // Obtener el ID del cliente seleccionado
+
             ClienteItem clienteSeleccionado = (ClienteItem) cmbCliente.getSelectedItem();
             facturaActualizada.setIdCliente(clienteSeleccionado.getId());
-            
-            // Parsear fecha de pago si existe
+
             if (dcFechaPago.getDate() != null) {
                 java.util.Date fechaUtil = dcFechaPago.getDate();
                 LocalDate fechaPago = new java.sql.Date(fechaUtil.getTime()).toLocalDate();
                 facturaActualizada.setFacFechaPago(fechaPago);
             }
-            
-            // Calcular totales
+
+            // Calcular totales finales
             double subtotal = 0.0;
             for (Pro_x_Fac detalle : detallesActuales) {
                 subtotal += detalle.getPxfSubtotal();
             }
             double iva = subtotal * 0.15;
             double total = subtotal + iva;
-            
+
             facturaActualizada.setFacSubtotal(subtotal);
             facturaActualizada.setFacIva(iva);
             facturaActualizada.setFacTotal(total);
-            
-            // Actualizar factura
+
             boolean resultado = Facturas.modificarFactura(facturaActualizada);
-            
+
             if (resultado) {
                 JOptionPane.showMessageDialog(this,
                     "Registro modificado correctamente",
@@ -765,13 +870,44 @@ public class ModificarFacturaGUI extends JFrame {
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
             }
-            
+
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
                 "Error al actualizar la factura: " + e.getMessage(),
                 "Error",
                 JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
+    }
+    
+    private JPanel crearPanelBotonSalir() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
+
+        btnSalir = new JButton("Salir");
+        btnSalir.setBackground(new Color(15, 23, 42)); 
+        btnSalir.setForeground(Color.WHITE);
+        btnSalir.setFocusPainted(false);
+        btnSalir.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        btnSalir.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
+        btnSalir.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnSalir.addActionListener(e -> volverAFacturasGUI());
+
+        panel.add(btnSalir);
+
+        return panel;
+    }
+    
+    private void volverAFacturasGUI() {
+        // Cerrar la ventana actual
+        dispose();
+
+        // Abrir FacturasGUI
+        SwingUtilities.invokeLater(() -> {
+            FacturasGUI facturasGUI = new FacturasGUI();
+            facturasGUI.setVisible(true);
+        });
     }
     
     // Método main para pruebas

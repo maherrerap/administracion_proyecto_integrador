@@ -12,7 +12,6 @@ import java.util.List;
 public class CrearFacturaGUI extends JFrame {
 
     // Colores
-    private static final Color NAVY = new Color(8, 26, 43);
     private static final Color NAVY_BTN = new Color(14, 33, 55);
     private static final Color AZUL_LABEL = new Color(30, 86, 198);
 
@@ -316,7 +315,7 @@ public class CrearFacturaGUI extends JFrame {
             nuevaFactura.setFacFechaPago(null);
             nuevaFactura.setEstadoFac("ACT");
             nuevaFactura.setFacSubtotal(0.0);
-            nuevaFactura.setFacIva(0.15);
+            nuevaFactura.setFacIva(0.0);
             nuevaFactura.setFacTotal(0.01);
 
             List<ErrorValidacion> errores = nuevaFactura.verificarFac();

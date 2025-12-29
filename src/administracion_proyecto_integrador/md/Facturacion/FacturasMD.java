@@ -47,7 +47,7 @@ public class FacturasMD {
         String sql = "INSERT INTO facturas "
            + "(id_factura, id_cliente, fac_subtotal, fac_iva, estado_fac, "
            + "fac_descripcion, fac_fecha_hora, fac_fecha_pago, fac_total) "
-           + "VALUES (?, ?, 0, 0.15, 'APR', ?, CURRENT_TIMESTAMP, ?, 0)";
+           + "VALUES (?, ?, 0, 0.0, 'APR', ?, CURRENT_TIMESTAMP, ?, 0)";
         
         
         try (Connection conn = ConexionPostgreSQL.getConnection();

@@ -226,5 +226,14 @@ public class Pro_x_Fac {
     public static boolean eliminarPxf(String idFactura, String idProducto) throws Exception {
         verificarPxf(idFactura, idProducto, 1);
         return Pro_x_FacMD.eliminarDetalle(idFactura, idProducto);
-    }    
+    }
+
+    /**
+     * Actualizar solo la cantidad de un detalle (sin manejar stock)
+     * Se usa cuando el stock ya fue manejado externamente
+     */
+    public static boolean actualizarCantidadDetalle(String idFactura, String idProducto, int nuevaCantidad) throws Exception {
+        verificarPxf(idFactura, idProducto, nuevaCantidad);
+        return Pro_x_FacMD.actualizarCantidadDetalle(idFactura, idProducto, nuevaCantidad);
+    }
 }
