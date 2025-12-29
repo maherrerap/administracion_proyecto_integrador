@@ -171,19 +171,20 @@ public class ProductoMD {
         }
     }
 
-    // AJUSTAR STOCK (cuando se modifica la cantidad de un detalle existente)
-    public static boolean ajustarStockPorCambio(String idProducto, int cantidadAnterior, int cantidadNueva) {
-        int diferencia = cantidadNueva - cantidadAnterior;
-
-        if (diferencia > 0) {
-            // Aumentó la cantidad, hay que descontar más stock
-            return actualizarStockPorVenta(idProducto, diferencia);
-        } else if (diferencia < 0) {
-            // Disminuyó la cantidad, hay que devolver stock
-            return revertirStockPorVenta(idProducto, Math.abs(diferencia));
+    // AJUSTAR STOCK
+    public static boolean ajustarStockPorCambio(String idProducto) {
+        String sql = "UPDATE PRODUCTOS SET PRO_SALDO_FINAL = PRO_SALDO_INICIAL + PRO_QTY_INGRESOS - PRO_QTY_EGRESOS WHERE ID_PRODUCTO = ?";
+        
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, idProducto);
+            
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.out.println("No se pudo completar la operación. Intente de nuevo.");
+            return false;
         }
-
-        return true; // No hubo cambio
+        
     }
     
     // -------------------------

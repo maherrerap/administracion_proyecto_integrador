@@ -637,7 +637,7 @@ public class ModificarFacturaGUI extends JFrame {
     
     public void eliminarProducto() {
         int filaSeleccionada = tablaDetalles.getSelectedRow();
-        
+
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(this,
                 "Debe seleccionar un producto de la tabla",
@@ -645,33 +645,26 @@ public class ModificarFacturaGUI extends JFrame {
                 JOptionPane.WARNING_MESSAGE);
             return;
         }
-        
+
         String idProducto = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
         String nombreProducto = (String) modeloTabla.getValueAt(filaSeleccionada, 1);
-        int cantidad = (int) modeloTabla.getValueAt(filaSeleccionada, 2);
-        
+
         int confirmacion = JOptionPane.showConfirmDialog(this,
             "¿Está seguro que desea eliminar el registro?\n" + nombreProducto,
             "Botón eliminar producto confirmación",
             JOptionPane.YES_NO_OPTION,
             JOptionPane.WARNING_MESSAGE);
-        
+
         if (confirmacion == JOptionPane.YES_OPTION) {
             try {
-                // Revertir el stock completo del producto
-                boolean stockRevertido = Productos.revertirStockPorVenta(idProducto, cantidad);
-                
-                if (!stockRevertido) {
-                    JOptionPane.showMessageDialog(this,
-                        "No se pudo actualizar el stock",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                    return;
+                // IMPORTANTE: Detener la edición de la celda antes de modificar la tabla
+                if (tablaDetalles.isEditing()) {
+                    tablaDetalles.getCellEditor().stopCellEditing();
                 }
-                
-                // Eliminar el detalle de la base de datos
+
+                // Eliminar el detalle (esto ya maneja la reversión del stock internamente)
                 boolean resultado = Pro_x_Fac.eliminarPxf(idFacturaActual, idProducto);
-                
+
                 if (resultado) {
                     JOptionPane.showMessageDialog(this,
                         "Detalle eliminado correctamente",
@@ -679,14 +672,12 @@ public class ModificarFacturaGUI extends JFrame {
                         JOptionPane.INFORMATION_MESSAGE);
                     cargarDetalles();
                 } else {
-                    // Revertir el cambio de stock si falla la eliminación
-                    Productos.actualizarStockPorVenta(idProducto, cantidad);
                     JOptionPane.showMessageDialog(this,
                         "No se pudo eliminar el producto",
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
                 }
-                
+
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this,
                     "Error al eliminar el producto: " + e.getMessage(),

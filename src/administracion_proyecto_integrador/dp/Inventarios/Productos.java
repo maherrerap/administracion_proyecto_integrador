@@ -262,11 +262,8 @@ public class Productos {
      * Ajustar stock cuando se modifica la cantidad de un detalle existente
      * Calcula la diferencia y actualiza o revierte según corresponda
      */
-    public static boolean ajustarStockPorCambio(String idProducto, int cantidadAnterior, int cantidadNueva) throws Exception {
-        if (cantidadAnterior < 0 || cantidadNueva < 0) {
-            throw new IllegalArgumentException("Las cantidades no pueden ser negativas");
-        }
-        return ProductoMD.ajustarStockPorCambio(idProducto, cantidadAnterior, cantidadNueva);
+    public static boolean ajustarStockPorCambio(String idProducto) throws Exception {
+        return ProductoMD.ajustarStockPorCambio(idProducto);
     }
     
     // ===================== VALIDACIONES (verificarProd) =====================

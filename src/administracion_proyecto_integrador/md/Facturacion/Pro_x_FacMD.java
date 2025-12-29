@@ -181,7 +181,7 @@ public class Pro_x_FacMD {
                 if (result > 0) {
                     // 2. Ajustar stock del producto
                     boolean stockAjustado = administracion_proyecto_integrador.md.Inventarios.ProductoMD
-                            .ajustarStockPorCambio(idProducto, cantidadAnterior, nuevaCantidad);
+                            .ajustarStockPorCambio(idProducto);
 
                     if (stockAjustado) {
                         // 3. Actualizar cabecera
