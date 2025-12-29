@@ -406,7 +406,11 @@ public class FacturasGUI extends JFrame {
 
     private void onEditar(int row) {
         String idFactura = String.valueOf(modelo.getValueAt(row, 0));
-        System.out.println("Acción EDITAR - fila " + row + " | idFactura=" + idFactura);
+        SwingUtilities.invokeLater(() -> {
+            ModificarFacturaGUI modificarVentana = new ModificarFacturaGUI(idFactura);
+            modificarVentana.setVisible(true);
+            dispose(); 
+        });
     }
 
     private void onInhabilitar(int row) {

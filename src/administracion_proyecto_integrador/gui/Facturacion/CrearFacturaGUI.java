@@ -316,7 +316,7 @@ public class CrearFacturaGUI extends JFrame {
             nuevaFactura.setFacFechaPago(null);
             nuevaFactura.setEstadoFac("ACT");
             nuevaFactura.setFacSubtotal(0.0);
-            nuevaFactura.setFacIva(0.0);
+            nuevaFactura.setFacIva(0.15);
             nuevaFactura.setFacTotal(0.01);
 
             List<ErrorValidacion> errores = nuevaFactura.verificarFac();

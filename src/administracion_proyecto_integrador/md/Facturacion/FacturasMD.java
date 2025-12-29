@@ -32,7 +32,7 @@ public class FacturasMD {
         
         Date fechaSql2 = rs.getDate("fac_fecha_pago");
         if (fechaSql2 != null) {
-            factura.setFacFechaHora(fechaSql2.toLocalDate());
+            factura.setFacFechaPago(fechaSql2.toLocalDate());
         }
         
         factura.setFacTotal(rs.getDouble("fac_total"));
@@ -47,7 +47,7 @@ public class FacturasMD {
         String sql = "INSERT INTO facturas "
            + "(id_factura, id_cliente, fac_subtotal, fac_iva, estado_fac, "
            + "fac_descripcion, fac_fecha_hora, fac_fecha_pago, fac_total) "
-           + "VALUES (?, ?, 0, 0, 'APR', ?, CURRENT_TIMESTAMP, ?, 0)";
+           + "VALUES (?, ?, 0, 0.15, 'APR', ?, CURRENT_TIMESTAMP, ?, 0)";
         
         
         try (Connection conn = ConexionPostgreSQL.getConnection();
@@ -66,6 +66,7 @@ public class FacturasMD {
             return filas > 0;
         } catch (SQLException e) {
             System.out.println("No se pudo completar la operación. Intente de nuevo.");
+            e.printStackTrace();
             return false;
         }
     }

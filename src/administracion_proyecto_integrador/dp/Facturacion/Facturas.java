@@ -290,7 +290,7 @@ public class Facturas {
     }
 
     private static String msgLongitud(String nombreCampo) {
-        return "El campo " + nombreCampo + " excede la longitud permitida.";
+        return "El campo " + nombreCampo + " no tiene la longitud permitida.";
     }
 
     private static String norm(String s) {
