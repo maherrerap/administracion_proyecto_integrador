@@ -113,7 +113,30 @@ public class FacturasMD {
         return lista;
     }
     
+    //-----------------------------------------------
+    // METODO PARA GUI PARA MOSTRAR UNA UNICA FACTURA
+    //-----------------------------------------------
     
+    public static Facturas obtenerFacturaPorId(String idFactura) {
+        String sql = "SELECT * FROM facturas WHERE id_factura = ?";
+
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, idFactura);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapearFacturas(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("No se pudo completar la operación. Intente de nuevo.");
+        }
+        return null;
+    }
+    
+
     // ------------------------
     // RF5.2: MODIFICAR FACTURA
     // ------------------------

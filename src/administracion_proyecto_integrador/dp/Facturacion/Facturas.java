@@ -6,6 +6,8 @@ import java.sql.Date;
 import java.time.LocalDate;
 
 import administracion_proyecto_integrador.md.Facturacion.FacturasMD;
+import administracion_proyecto_integrador.md.Facturacion.ClienteMD;
+import administracion_proyecto_integrador.dp.Facturacion.Clientes;
 
 public class Facturas {
     
@@ -129,6 +131,16 @@ public class Facturas {
     }
     
     /**
+     * 
+     * METODO PARA GUI PARA OBTENER LOS DATOS DE UNA FACTURA EN ESPECIFICO (CABECERA)
+     */
+
+    public static Facturas obtenerFacturaPorId(String idFactura) throws Exception {
+        return FacturasMD.obtenerFacturaPorId(idFactura);
+    }
+    
+    
+    /**
      * RF5.1: Grabar Factura
      * Recibe un objeto Factura con los datos cargados desde la GUI
      * y lo envia a la capa MD para que se inserte en la BD
@@ -169,6 +181,15 @@ public class Facturas {
         return facturaMD.obtenerFacturasPorParametro(idFactura, idCliente, facDescripcion);
     }
     
+    
+    /**
+     * METODO PARA COMBOBO DE FACTURACION
+     */
+    
+    public static List<Clientes> obtenerClientesActivos () throws Exception {
+        return ClienteMD.obtenerListadoClientes(); 
+    }
+    
     // VALIDACIONES
 
     /** Representa un error de validación (Código + Mensaje) */
@@ -198,8 +219,8 @@ public class Facturas {
         List<ErrorValidacion> errores = new ArrayList<>();
 
         
-        final int MAX_ID_FACTURA   = 3;    
-        final int MAX_ID_CLIENTE   = 3;    
+        final int MAX_ID_FACTURA   = 7;    
+        final int MAX_ID_CLIENTE   = 7;    
         final int MAX_ESTADO       = 3;    
         final int MAX_DESCRIPCION  = 100;   
 
@@ -230,10 +251,10 @@ public class Facturas {
             errores.add(err("V1", msgObligatorio("fecha")));
 
         // ---------------- V2: Longitud máxima excedida ----------------
-        if (!isBlank(idFactura) && idFactura.length() > MAX_ID_FACTURA)
+        if (!isBlank(idFactura) && idFactura.length() != MAX_ID_FACTURA)
             errores.add(err("V2", msgLongitud("idFactura")));
 
-        if (!isBlank(idCliente) && idCliente.length() > MAX_ID_CLIENTE)
+        if (!isBlank(idCliente) && idCliente.length() != MAX_ID_CLIENTE)
             errores.add(err("V2", msgLongitud("idCliente")));
 
         if (!isBlank(estado) && estado.length() > MAX_ESTADO)
