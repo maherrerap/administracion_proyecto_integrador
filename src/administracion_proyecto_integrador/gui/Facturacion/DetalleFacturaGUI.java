@@ -233,9 +233,17 @@ public class DetalleFacturaGUI extends JFrame {
         btnVolver.setForeground(Color.WHITE);
         btnVolver.setFocusPainted(false);
         btnVolver.addActionListener(e -> {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Operación Cancelada.",
+                    "Información",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
             new FacturasGUI().setVisible(true);
             dispose();
         });
+
         panelBotonVolver.add(btnVolver);
         panelInferior.add(panelBotonVolver, BorderLayout.SOUTH);
         

@@ -128,7 +128,7 @@ public class ModificarFacturaGUI extends JFrame {
         btnActualizar.setBackground(new Color(15, 23, 42));
         btnActualizar.setForeground(Color.WHITE);
         btnActualizar.setFocusPainted(false);
-        btnActualizar.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        btnActualizar.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnActualizar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         btnActualizar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnActualizar.addActionListener(e -> actualizarFactura());
@@ -287,7 +287,7 @@ public class ModificarFacturaGUI extends JFrame {
         
         // Renderizador para columnas de precio
         DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
-        rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
+        rightRenderer.setHorizontalAlignment(SwingConstants.CENTER);
         
         tablaDetalles.getColumnModel().getColumn(0).setPreferredWidth(80);
         tablaDetalles.getColumnModel().getColumn(1).setPreferredWidth(250);
@@ -900,14 +900,24 @@ public class ModificarFacturaGUI extends JFrame {
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
 
-        btnSalir = new JButton("Salir");
+        btnSalir = new JButton("Volver");
         btnSalir.setBackground(new Color(15, 23, 42)); 
         btnSalir.setForeground(Color.WHITE);
         btnSalir.setFocusPainted(false);
-        btnSalir.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        btnSalir.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnSalir.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
         btnSalir.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnSalir.addActionListener(e -> volverAFacturasGUI());
+        btnSalir.addActionListener(e -> {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Operación Cancelada.",
+                    "Información",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+            new FacturasGUI().setVisible(true);
+            dispose();
+        });
 
         panel.add(btnSalir);
 

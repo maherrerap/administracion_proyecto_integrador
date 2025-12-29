@@ -31,6 +31,8 @@ public class FacturasGUI extends JFrame {
     private int totalPaginas = 0;
     private List<Facturas> todasLasFacturas = new ArrayList<>();
     
+    private boolean enModoBusqueda = false;
+    
     public FacturasGUI() {
         setTitle("Catálogo de Facturas");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -235,12 +237,15 @@ public class FacturasGUI extends JFrame {
         JPanel acciones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
         acciones.setOpaque(false);
 
+        JButton btnRecargar = crearBotonSuperior("Recargar");
         JButton btnConsulta = crearBotonSuperior("Consulta Por Parametro");
         JButton btnCrear = crearBotonSuperior("Crear Factura");
 
+        btnRecargar.addActionListener(e -> recargarDatos());
         btnConsulta.addActionListener(e -> onConsultaPorParametro());
         btnCrear.addActionListener(e -> onCrearFactura());
 
+        acciones.add(btnRecargar);
         acciones.add(btnConsulta);
         acciones.add(btnCrear);
 
@@ -355,7 +360,8 @@ public class FacturasGUI extends JFrame {
     }
 
     private void onConsultaPorParametro() {
-        System.out.println("Click: Consulta Por Parametro");
+        ConsultaFacturasGUI consulta = new ConsultaFacturasGUI(this);
+        consulta.setVisible(true);
     }
 
     private void onCrearFactura() {
@@ -458,7 +464,8 @@ public class FacturasGUI extends JFrame {
 
             if (paginaActual > totalPaginas) paginaActual = totalPaginas;
             if (paginaActual < 1) paginaActual = 1;
-
+            
+            enModoBusqueda = false;
             actualizarTablaPaginada();
             lblPagina.setText("Página " + paginaActual + " de " + totalPaginas);
 
@@ -491,6 +498,23 @@ public class FacturasGUI extends JFrame {
                     "Ver", "Editar", "Inhabilitar"
             });
         }
+    }
+    
+    /**
+     * Método para actualizar la tabla con resultados de búsqueda
+     * Llamado desde ConsultaFacturasGUI
+     */
+    public void actualizarTablaConResultados(List<Facturas> resultados) {
+        todasLasFacturas = resultados;
+        totalRegistros = resultados.size();
+        totalPaginas = (int) Math.ceil((double) totalRegistros / registrosPorPagina);
+        if (totalPaginas == 0) totalPaginas = 1;
+
+        paginaActual = 1;
+        enModoBusqueda = true;
+
+        actualizarTablaPaginada();
+        lblPagina.setText("Página " + paginaActual + " de " + totalPaginas + " (Búsqueda)");
     }
     
     public void recargarDatos() {

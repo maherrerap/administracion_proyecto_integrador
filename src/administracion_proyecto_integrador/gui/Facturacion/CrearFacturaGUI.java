@@ -170,7 +170,7 @@ public class CrearFacturaGUI extends JFrame {
         JPanel panelBoton = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 20));
         panelBoton.setOpaque(false);
 
-        JButton btnSalir = new JButton("Salir");
+        JButton btnSalir = new JButton("Volver");
         JButton btnCrear = new JButton("Crear");
         
         btnCrear.setBackground(NAVY_BTN);
@@ -188,9 +188,17 @@ public class CrearFacturaGUI extends JFrame {
         btnSalir.setBorder(BorderFactory.createEmptyBorder(12, 40, 12, 40));
         btnSalir.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnSalir.addActionListener(e -> {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Operación Cancelada.",
+                    "Información",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
             new FacturasGUI().setVisible(true);
             dispose();
         });
+
 
         panelBoton.add(btnSalir);
         panelBoton.add(btnCrear);

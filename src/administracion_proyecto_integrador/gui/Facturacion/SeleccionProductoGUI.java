@@ -143,7 +143,7 @@ public class SeleccionProductoGUI extends JDialog {
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         panelBotones.setBackground(Color.WHITE);
         
-        btnCancelar = new JButton("Cancelar");
+        btnCancelar = new JButton("Volver");
         btnCancelar.setPreferredSize(new Dimension(100, 35));
         btnCancelar.setFont(new Font("Arial", Font.PLAIN, 14));
         btnCancelar.setBackground(new Color(200, 200, 200));
