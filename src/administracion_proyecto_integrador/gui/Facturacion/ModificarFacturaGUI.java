@@ -411,14 +411,15 @@ public class ModificarFacturaGUI extends JFrame {
         private String label;
         private boolean isPushed;
         private ModificarFacturaGUI parent;
-        
+        private int editingRow = -1;
+
         public ButtonEditor(JCheckBox checkBox, ModificarFacturaGUI parent, String label) {
             super(checkBox);
             this.parent = parent;
             this.label = label;
-            
+
             Color bgColor = label.equals("Eliminar") ? new Color(239, 68, 68) : new Color(59, 130, 246);
-            
+
             button = new JButton(label);
             button.setOpaque(true);
             button.setBackground(bgColor);
@@ -427,35 +428,49 @@ public class ModificarFacturaGUI extends JFrame {
             button.setFocusPainted(false);
             button.setBorderPainted(false);
             button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            
-            button.addActionListener(e -> fireEditingStopped());
+
+            // CAMBIO CRÍTICO: No llamar fireEditingStopped() aquí
+            button.addActionListener(e -> {
+                isPushed = true;
+                // Ejecutar la acción ANTES de detener la edición
+                executeAction();
+                // Detener la edición después
+                stopCellEditing();
+            });
         }
-        
+
+        @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
                 boolean isSelected, int row, int column) {
-            isPushed = true;
+            editingRow = row;
+            isPushed = false;
             return button;
         }
-        
-        public Object getCellEditorValue() {
-            if (isPushed) {
-                int row = tablaDetalles.getSelectedRow();
-                if (row != -1) {
-                    if (label.equals("+")) {
-                        parent.incrementarCantidad();
-                    } else if (label.equals("-")) {
-                        parent.decrementarCantidad();
-                    } else if (label.equals("Eliminar")) {
-                        parent.eliminarProducto();
-                    }
+
+        // Nuevo método para ejecutar la acción
+        private void executeAction() {
+            int row = editingRow;
+            if (row >= 0 && row < tablaDetalles.getRowCount()) {
+                if (label.equals("+")) {
+                    parent.incrementarCantidad(row);
+                } else if (label.equals("-")) {
+                    parent.decrementarCantidad(row);
+                } else if (label.equals("Eliminar")) {
+                    parent.eliminarProducto(row);
                 }
             }
+        }
+
+        @Override
+        public Object getCellEditorValue() {
             isPushed = false;
             return label;
         }
-        
+
+        @Override
         public boolean stopCellEditing() {
             isPushed = false;
+            editingRow = -1; // Reset después de detener
             return super.stopCellEditing();
         }
     }
@@ -553,9 +568,7 @@ public class ModificarFacturaGUI extends JFrame {
     }
     
 
-    public void incrementarCantidad() {
-        int filaSeleccionada = tablaDetalles.getSelectedRow();
-
+    public void incrementarCantidad(int filaSeleccionada) {
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(this,
                 "Debe seleccionar un producto de la tabla",
@@ -607,8 +620,7 @@ public class ModificarFacturaGUI extends JFrame {
         }
     }
 
-    public void decrementarCantidad() {
-        int filaSeleccionada = tablaDetalles.getSelectedRow();
+    public void decrementarCantidad(int filaSeleccionada) {
 
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(this,
@@ -660,13 +672,21 @@ public class ModificarFacturaGUI extends JFrame {
         }
     }
 
-    public void eliminarProducto() {
-        int filaSeleccionada = tablaDetalles.getSelectedRow();
-
-        if (filaSeleccionada == -1) {
+    public void eliminarProducto(int filaSeleccionada) {
+        if (filaSeleccionada == -1 || filaSeleccionada >= modeloTabla.getRowCount()) {
             JOptionPane.showMessageDialog(this,
-                "Debe seleccionar un producto de la tabla",
+                "Debe seleccionar un producto válido de la tabla",
                 "Advertencia",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // VALIDACIÓN: No permitir eliminar si es el único producto
+        if (modeloTabla.getRowCount() == 1) {
+            JOptionPane.showMessageDialog(this,
+                "No se puede eliminar el único producto de la factura.\n" +
+                "Una factura debe tener al menos un producto.",
+                "Operación no permitida",
                 JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -676,17 +696,12 @@ public class ModificarFacturaGUI extends JFrame {
 
         int confirmacion = JOptionPane.showConfirmDialog(this,
             "¿Está seguro que desea eliminar el registro?\n" + nombreProducto,
-            "Botón eliminar producto confirmación",
+            "Confirmar eliminación",
             JOptionPane.YES_NO_OPTION,
             JOptionPane.WARNING_MESSAGE);
 
         if (confirmacion == JOptionPane.YES_OPTION) {
             try {
-                // IMPORTANTE: Detener la edición de la celda antes de modificar la tabla
-                if (tablaDetalles.isEditing()) {
-                    tablaDetalles.getCellEditor().stopCellEditing();
-                }
-
                 // Remover de la lista en memoria
                 detallesActuales.removeIf(d -> d.getIdProducto().equals(idProducto));
 
@@ -708,7 +723,7 @@ public class ModificarFacturaGUI extends JFrame {
             }
         }
     }
-
+    
     private void actualizarFactura() {
         try {
             // Validar campos
@@ -861,7 +876,7 @@ public class ModificarFacturaGUI extends JFrame {
             if (resultado) {
                 JOptionPane.showMessageDialog(this,
                     "Registro modificado correctamente",
-                    "Botón actualizar",
+                    "Éxito",
                     JOptionPane.INFORMATION_MESSAGE);
                 dispose();
             } else {

@@ -415,8 +415,39 @@ public class FacturasGUI extends JFrame {
 
     private void onInhabilitar(int row) {
         String idFactura = String.valueOf(modelo.getValueAt(row, 0));
-        System.out.println("Acción INHABILITAR - fila " + row + " | idFactura=" + idFactura);
+
+        int opcion = JOptionPane.showConfirmDialog(
+                this,
+                "¿Está seguro que desea eliminar el registro?",
+                "Confirmar eliminación",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        if (opcion == JOptionPane.YES_OPTION) {
+            boolean eliminado = administracion_proyecto_integrador.dp.Facturacion.Facturas
+                    .eliminarFactura(idFactura);
+
+            if (eliminado) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Factura inhabilitada correctamente.",
+                        "Operación exitosa",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
+                recargarDatos();
+            } else {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No se pudo inhabilitar la factura.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
     }
+
 
     private void cargarDatosMock() {
         try {

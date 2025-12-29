@@ -337,7 +337,7 @@ public class CrearFacturaGUI extends JFrame {
 
             if (exito) {
                 JOptionPane.showMessageDialog(this, 
-                    "Factura creada exitosamente con ID: " + nuevaFactura.getIdFactura(), 
+                    "Registro creado correctamente.", 
                     "Éxito", 
                     JOptionPane.INFORMATION_MESSAGE);
 
