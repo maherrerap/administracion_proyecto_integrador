@@ -190,6 +190,13 @@ public class Facturas {
         return ClienteMD.obtenerListadoClientes(); 
     }
     
+    /**
+     * Obtiene el siguiente ID de factura disponible
+     */
+    public static String obtenerSiguienteIdFactura() {
+        return FacturasMD.generarSiguienteIdFactura();
+    }
+    
     // VALIDACIONES
 
     /** Representa un error de validación (Código + Mensaje) */

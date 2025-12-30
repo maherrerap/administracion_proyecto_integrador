@@ -256,4 +256,28 @@ public class FacturasMD {
         }
         return lista;
     }
+    /**
+     * Genera el siguiente ID de factura en formato FAC0001, FAC0002, etc.
+     */
+    public static String generarSiguienteIdFactura() {
+        String sql = "SELECT generar_id_factura()";
+
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getString(1);
+            }
+
+            // Si falla, devolver el primer ID
+            return "FAC0001";
+
+        } catch (SQLException e) {
+            System.out.println("Error al generar ID de factura: " + e.getMessage());
+            e.printStackTrace();
+            // En caso de error, devolver el primer ID
+            return "FAC0001";
+        }
+    }
 }

@@ -60,6 +60,9 @@ public class CrearFacturaGUI extends JFrame {
 
         // Formulario
         content.add(crearFormulario(), BorderLayout.CENTER);
+        
+        // Cargar el ID automático al iniciar
+        cargarSiguienteIdFactura();
     }
 
     private JComponent crearTitulo() {
@@ -223,7 +226,9 @@ public class CrearFacturaGUI extends JFrame {
             BorderFactory.createLineBorder(new Color(180, 180, 180), 1),
             new EmptyBorder(5, 10, 5, 10)
         ));
-
+        
+        txtNumFactura.setEditable(false);
+        txtNumFactura.setBackground(new Color(245, 245, 245));
         panel.add(lbl, BorderLayout.NORTH);
         panel.add(txtNumFactura, BorderLayout.CENTER);
 
@@ -262,6 +267,20 @@ public class CrearFacturaGUI extends JFrame {
         return panel;
     }
 
+    private void cargarSiguienteIdFactura() {
+        try {
+            String siguienteId = Facturas.obtenerSiguienteIdFactura();
+            txtNumFactura.setText(siguienteId);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, 
+                "Error al generar el ID de factura: " + e.getMessage(), 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+            // En caso de error, establecer un valor por defecto
+            txtNumFactura.setText("FAC0001");
+        }
+    }
+    
     private void cargarClientes() {
         try {
             cmbClientes.removeAllItems();
@@ -286,14 +305,6 @@ public class CrearFacturaGUI extends JFrame {
     }
 
     private void crearFactura() {
-        if (txtNumFactura.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, 
-                "Debe ingresar el número de factura", 
-                "Validación", 
-                JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
         if (cmbClientes.getSelectedIndex() == 0) {
             JOptionPane.showMessageDialog(this, 
                 "Debe seleccionar un cliente", 
@@ -373,11 +384,5 @@ public class CrearFacturaGUI extends JFrame {
         txtNumFactura.setText("");
         cmbClientes.setSelectedIndex(0);
         txtDescripcion.setText("");
-    }
-
-    /*
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new CrearFacturaGUI().setVisible(true));
-    }*/
-    
+    }    
 }
