@@ -375,7 +375,9 @@ public class CrearFacturaGUI extends JFrame {
         txtDescripcion.setText("");
     }
 
+    /*
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new CrearFacturaGUI().setVisible(true));
-    }
+    }*/
+    
 }

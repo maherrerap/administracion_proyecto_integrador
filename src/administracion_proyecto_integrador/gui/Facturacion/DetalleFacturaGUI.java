@@ -404,12 +404,4 @@ public class DetalleFacturaGUI extends JFrame {
                 JOptionPane.ERROR_MESSAGE);
         }
     }
-    
-    // Método main para pruebas
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            DetalleFacturaGUI ventana = new DetalleFacturaGUI("FACP021");
-            ventana.setVisible(true);
-        });
-    }
 }

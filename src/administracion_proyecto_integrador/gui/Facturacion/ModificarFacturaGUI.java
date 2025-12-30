@@ -878,7 +878,7 @@ public class ModificarFacturaGUI extends JFrame {
                     "Registro modificado correctamente",
                     "Éxito",
                     JOptionPane.INFORMATION_MESSAGE);
-                dispose();
+                volverAFacturasGUI();
             } else {
                 JOptionPane.showMessageDialog(this,
                     "No se pudo actualizar la factura",
@@ -932,14 +932,6 @@ public class ModificarFacturaGUI extends JFrame {
         SwingUtilities.invokeLater(() -> {
             FacturasGUI facturasGUI = new FacturasGUI();
             facturasGUI.setVisible(true);
-        });
-    }
-    
-    // Método main para pruebas
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            ModificarFacturaGUI gui = new ModificarFacturaGUI("FACP020");
-            gui.setVisible(true);
         });
     }
 }
