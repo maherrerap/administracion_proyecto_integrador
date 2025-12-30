@@ -232,10 +232,8 @@ public class DetalleFacturaGUI extends JFrame {
         btnVolver.setBackground(new Color(44, 62, 80));
         btnVolver.setForeground(Color.WHITE);
         btnVolver.setFocusPainted(false);
-        btnVolver.addActionListener(e -> {
-            new FacturasGUI().setVisible(true);
-            dispose();
-        });
+        btnVolver.addActionListener(e -> {new FacturasGUI().setVisible(true);dispose();});
+
         panelBotonVolver.add(btnVolver);
         panelInferior.add(panelBotonVolver, BorderLayout.SOUTH);
         
@@ -395,13 +393,5 @@ public class DetalleFacturaGUI extends JFrame {
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
         }
-    }
-    
-    // Método main para pruebas
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            DetalleFacturaGUI ventana = new DetalleFacturaGUI("FACP021");
-            ventana.setVisible(true);
-        });
     }
 }

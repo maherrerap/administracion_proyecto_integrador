@@ -31,6 +31,8 @@ public class FacturasGUI extends JFrame {
     private int totalPaginas = 0;
     private List<Facturas> todasLasFacturas = new ArrayList<>();
     
+    private boolean enModoBusqueda = false;
+    
     public FacturasGUI() {
         setTitle("Catálogo de Facturas");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -235,12 +237,15 @@ public class FacturasGUI extends JFrame {
         JPanel acciones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
         acciones.setOpaque(false);
 
+        JButton btnRecargar = crearBotonSuperior("Recargar");
         JButton btnConsulta = crearBotonSuperior("Consulta Por Parametro");
         JButton btnCrear = crearBotonSuperior("Crear Factura");
 
+        btnRecargar.addActionListener(e -> recargarDatos());
         btnConsulta.addActionListener(e -> onConsultaPorParametro());
         btnCrear.addActionListener(e -> onCrearFactura());
 
+        acciones.add(btnRecargar);
         acciones.add(btnConsulta);
         acciones.add(btnCrear);
 
@@ -355,7 +360,8 @@ public class FacturasGUI extends JFrame {
     }
 
     private void onConsultaPorParametro() {
-        System.out.println("Click: Consulta Por Parametro");
+        ConsultaFacturasGUI consulta = new ConsultaFacturasGUI(this);
+        consulta.setVisible(true);
     }
 
     private void onCrearFactura() {
@@ -406,13 +412,48 @@ public class FacturasGUI extends JFrame {
 
     private void onEditar(int row) {
         String idFactura = String.valueOf(modelo.getValueAt(row, 0));
-        System.out.println("Acción EDITAR - fila " + row + " | idFactura=" + idFactura);
+        SwingUtilities.invokeLater(() -> {
+            ModificarFacturaGUI modificarVentana = new ModificarFacturaGUI(idFactura);
+            modificarVentana.setVisible(true);
+            dispose(); 
+        });
     }
 
     private void onInhabilitar(int row) {
         String idFactura = String.valueOf(modelo.getValueAt(row, 0));
-        System.out.println("Acción INHABILITAR - fila " + row + " | idFactura=" + idFactura);
+
+        int opcion = JOptionPane.showConfirmDialog(
+                this,
+                "¿Está seguro que desea eliminar el registro?",
+                "Confirmar eliminación",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        if (opcion == JOptionPane.YES_OPTION) {
+            boolean eliminado = administracion_proyecto_integrador.dp.Facturacion.Facturas
+                    .eliminarFactura(idFactura);
+
+            if (eliminado) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Factura inhabilitada correctamente.",
+                        "Operación exitosa",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
+                recargarDatos();
+            } else {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No se pudo inhabilitar la factura.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
     }
+
 
     private void cargarDatosMock() {
         try {
@@ -423,7 +464,8 @@ public class FacturasGUI extends JFrame {
 
             if (paginaActual > totalPaginas) paginaActual = totalPaginas;
             if (paginaActual < 1) paginaActual = 1;
-
+            
+            enModoBusqueda = false;
             actualizarTablaPaginada();
             lblPagina.setText("Página " + paginaActual + " de " + totalPaginas);
 
@@ -456,6 +498,23 @@ public class FacturasGUI extends JFrame {
                     "Ver", "Editar", "Inhabilitar"
             });
         }
+    }
+    
+    /**
+     * Método para actualizar la tabla con resultados de búsqueda
+     * Llamado desde ConsultaFacturasGUI
+     */
+    public void actualizarTablaConResultados(List<Facturas> resultados) {
+        todasLasFacturas = resultados;
+        totalRegistros = resultados.size();
+        totalPaginas = (int) Math.ceil((double) totalRegistros / registrosPorPagina);
+        if (totalPaginas == 0) totalPaginas = 1;
+
+        paginaActual = 1;
+        enModoBusqueda = true;
+
+        actualizarTablaPaginada();
+        lblPagina.setText("Página " + paginaActual + " de " + totalPaginas + " (Búsqueda)");
     }
     
     public void recargarDatos() {

@@ -171,19 +171,20 @@ public class ProductoMD {
         }
     }
 
-    // AJUSTAR STOCK (cuando se modifica la cantidad de un detalle existente)
-    public static boolean ajustarStockPorCambio(String idProducto, int cantidadAnterior, int cantidadNueva) {
-        int diferencia = cantidadNueva - cantidadAnterior;
-
-        if (diferencia > 0) {
-            // Aumentó la cantidad, hay que descontar más stock
-            return actualizarStockPorVenta(idProducto, diferencia);
-        } else if (diferencia < 0) {
-            // Disminuyó la cantidad, hay que devolver stock
-            return revertirStockPorVenta(idProducto, Math.abs(diferencia));
+    // AJUSTAR STOCK
+    public static boolean ajustarStockPorCambio(String idProducto) {
+        String sql = "UPDATE PRODUCTOS SET PRO_SALDO_FINAL = PRO_SALDO_INICIAL + PRO_QTY_INGRESOS - PRO_QTY_EGRESOS WHERE ID_PRODUCTO = ?";
+        
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, idProducto);
+            
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.out.println("No se pudo completar la operación. Intente de nuevo.");
+            return false;
         }
-
-        return true; // No hubo cambio
+        
     }
     
     // -------------------------
@@ -238,6 +239,33 @@ public class ProductoMD {
 
         return null;
     }
+    
+    // --------------------------------------------
+    // METODO DE UTILIDAD: OBTENER STOCK DISPONIBLE
+    // --------------------------------------------
+    
+    public static int obtenerStockDisponible(String idProducto) {
+        String sql = "SELECT pro_saldo_final FROM productos " +
+                     "WHERE id_producto = ? AND estado_prod = 'ACT'";
+
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, idProducto);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("pro_saldo_final");
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener stock disponible: " + e.getMessage());
+        }
+
+        return 0;
+    }
+    
     
     // -------------------------
     // RF4.2: MODIFICAR PRODUCTO

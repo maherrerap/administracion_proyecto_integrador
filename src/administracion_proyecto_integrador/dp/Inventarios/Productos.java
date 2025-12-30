@@ -234,6 +234,45 @@ public class Productos {
         return productoMD.obtenerProductosPorParametro(idProducto, proDescripcion, idCategoria);
     }
     
+// ===================== MÉTODOS INTERMEDIARIOS PARA GESTIÓN DE STOCK =====================
+    
+    /**
+     * Actualizar stock cuando se realiza una venta
+     * Incrementa los egresos y reduce el saldo final
+     */
+    public static boolean actualizarStockPorVenta(String idProducto, int cantidad) throws Exception {
+        if (cantidad <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor a 0");
+        }
+        return ProductoMD.actualizarStockPorVenta(idProducto, cantidad);
+    }
+    
+    /**
+     * Revertir stock cuando se cancela o elimina una venta
+     * Decrementa los egresos y aumenta el saldo final
+     */
+    public static boolean revertirStockPorVenta(String idProducto, int cantidad) throws Exception {
+        if (cantidad <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor a 0");
+        }
+        return ProductoMD.revertirStockPorVenta(idProducto, cantidad);
+    }
+    
+    /**
+     * Ajustar stock cuando se modifica la cantidad de un detalle existente
+     * Calcula la diferencia y actualiza o revierte según corresponda
+     */
+    public static boolean ajustarStockPorCambio(String idProducto) throws Exception {
+        return ProductoMD.ajustarStockPorCambio(idProducto);
+    }
+    
+    /**
+     * Obtener stock disponible de un producto
+     */
+    public static int obtenerStockDisponible(String idProducto) throws Exception {
+        return ProductoMD.obtenerStockDisponible(idProducto);
+    }
+    
     // ===================== VALIDACIONES (verificarProd) =====================
 
     /** Representa un error de validación (Código + Mensaje) */

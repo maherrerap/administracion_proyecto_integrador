@@ -32,7 +32,7 @@ public class FacturasMD {
         
         Date fechaSql2 = rs.getDate("fac_fecha_pago");
         if (fechaSql2 != null) {
-            factura.setFacFechaHora(fechaSql2.toLocalDate());
+            factura.setFacFechaPago(fechaSql2.toLocalDate());
         }
         
         factura.setFacTotal(rs.getDouble("fac_total"));
@@ -47,7 +47,7 @@ public class FacturasMD {
         String sql = "INSERT INTO facturas "
            + "(id_factura, id_cliente, fac_subtotal, fac_iva, estado_fac, "
            + "fac_descripcion, fac_fecha_hora, fac_fecha_pago, fac_total) "
-           + "VALUES (?, ?, 0, 0, 'APR', ?, CURRENT_TIMESTAMP, ?, 0)";
+           + "VALUES (?, ?, 0, 0.0, 'APR', ?, CURRENT_TIMESTAMP, ?, 0)";
         
         
         try (Connection conn = ConexionPostgreSQL.getConnection();
@@ -66,6 +66,7 @@ public class FacturasMD {
             return filas > 0;
         } catch (SQLException e) {
             System.out.println("No se pudo completar la operación. Intente de nuevo.");
+            e.printStackTrace();
             return false;
         }
     }
@@ -140,23 +141,45 @@ public class FacturasMD {
     // ------------------------
     // RF5.2: MODIFICAR FACTURA
     // ------------------------
-    
-    public boolean modificarFactura (Facturas factura) { 
-        String sql = "UPDATE facturas SET fac_descripcion = ? WHERE id_factura = ?";
-        
+
+    public boolean modificarFactura(Facturas factura) {
+        String sql = "UPDATE facturas " +
+                     "SET fac_descripcion = ?, " +
+                     "    fac_subtotal = ?, " +
+                     "    fac_iva = ?, " +
+                     "    fac_fecha_pago = ?, " +
+                     "    id_cliente = ?, " +
+                     "    fac_total = ? " +
+                     "WHERE id_factura = ?";
+
         try (Connection conn = ConexionPostgreSQL.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, factura.getFacDescripcion());
-            ps.setString(2, factura.getIdFactura());
-            
+            ps.setDouble(2, factura.getFacSubtotal());
+            ps.setDouble(3, factura.getFacIva());
+
+            // Conversión correcta de LocalDate a java.sql.Date
+            if (factura.getFacFechaPago() != null) {
+                ps.setDate(4, java.sql.Date.valueOf(factura.getFacFechaPago()));
+            } else {
+                ps.setNull(4, java.sql.Types.DATE);
+            }
+
+            ps.setString(5, factura.getIdCliente());
+            ps.setDouble(6, factura.getFacTotal());
+            ps.setString(7, factura.getIdFactura());
+
             int filas = ps.executeUpdate();
             return filas > 0;
+
         } catch (SQLException e) {
             System.out.println("No se pudo completar la operación. Intente de nuevo.");
+            e.printStackTrace();
             return false;
         }
     }
+
     
     // ---------------------------
     // RF5.3: INHABILITAR FACTURA
@@ -232,5 +255,29 @@ public class FacturasMD {
             System.out.println("No se pudo completar la operación. Intente de nuevo.");
         }
         return lista;
+    }
+    /**
+     * Genera el siguiente ID de factura en formato FAC0001, FAC0002, etc.
+     */
+    public static String generarSiguienteIdFactura() {
+        String sql = "SELECT generar_id_factura()";
+
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getString(1);
+            }
+
+            // Si falla, devolver el primer ID
+            return "FAC0001";
+
+        } catch (SQLException e) {
+            System.out.println("Error al generar ID de factura: " + e.getMessage());
+            e.printStackTrace();
+            // En caso de error, devolver el primer ID
+            return "FAC0001";
+        }
     }
 }
