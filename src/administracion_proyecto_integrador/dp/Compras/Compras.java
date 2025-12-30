@@ -107,8 +107,17 @@ public class Compras {
         return md.obtenerComprasPorParametro(idCompra, idProveedor, estadoOc);
     }
 
+    /**
+     * Obtiene el siguiente ID de compra disponible
+     * MISMO patrón que Facturas
+     */
+    public static String obtenerSiguienteIdCompra() {
+        return ComprasMD.generarSiguienteIdCompra();
+    }
+
     // ===================== VALIDACIONES =====================
 
+    /** Representa un error de validación (Código + Mensaje) */
     public static class ErrorValidacion {
         private final String codigo;
         private final String mensaje;
@@ -127,19 +136,42 @@ public class Compras {
         }
     }
 
+    /**
+     * Verifica los datos de la orden de compra antes de guardarla en BD.
+     */
     public List<ErrorValidacion> verificarOc() {
         List<ErrorValidacion> errores = new ArrayList<>();
 
-        String idCompra = norm(this.idCompra);
-        String idProveedor = norm(this.idProveedor);
+        final int MAX_ID_COMPRA    = 7;
+        final int MAX_ID_PROV      = 7;
+        final int MAX_ESTADO       = 3;
 
+        String idCompra   = norm(this.idCompra);
+        String idProveedor = norm(this.idProveedor);
+        String estado     = norm(this.estadoOc);
+
+        // V1: obligatorios
         if (isBlank(idCompra))
-            errores.add(err("V1", "El campo idCompra es obligatorio."));
+            errores.add(err("V1", msgObligatorio("idCompra")));
 
         if (isBlank(idProveedor))
-            errores.add(err("V1", "El campo proveedor es obligatorio."));
+            errores.add(err("V1", msgObligatorio("proveedor")));
 
-        if (this.ocFechaVenc != null && this.ocFechaHora != null
+        if (isBlank(estado))
+            errores.add(err("V1", msgObligatorio("estado")));
+
+        // V2: longitud
+        if (!isBlank(idCompra) && idCompra.length() != MAX_ID_COMPRA)
+            errores.add(err("V2", msgLongitud("idCompra")));
+
+        if (!isBlank(idProveedor) && idProveedor.length() != MAX_ID_PROV)
+            errores.add(err("V2", msgLongitud("proveedor")));
+
+        if (!isBlank(estado) && estado.length() > MAX_ESTADO)
+            errores.add(err("V2", msgLongitud("estado")));
+
+        // V7: fechas
+        if (this.ocFechaHora != null && this.ocFechaVenc != null
                 && this.ocFechaVenc.isBefore(this.ocFechaHora)) {
             errores.add(err("V7", "La fecha de vencimiento no es válida."));
         }
@@ -151,6 +183,14 @@ public class Compras {
 
     private static ErrorValidacion err(String codigo, String mensaje) {
         return new ErrorValidacion(codigo, mensaje);
+    }
+
+    private static String msgObligatorio(String campo) {
+        return "El campo " + campo + " es obligatorio.";
+    }
+
+    private static String msgLongitud(String campo) {
+        return "El campo " + campo + " no tiene la longitud permitida.";
     }
 
     private static String norm(String s) {

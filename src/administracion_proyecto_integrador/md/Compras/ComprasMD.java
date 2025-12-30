@@ -14,6 +14,9 @@ import java.util.List;
 
 public class ComprasMD {
 
+    // =========================
+    // MAPEO ResultSet → DP
+    // =========================
     private static Compras mapearCompras(ResultSet rs) throws SQLException {
         Compras compra = new Compras();
 
@@ -45,7 +48,9 @@ public class ComprasMD {
         return compra;
     }
 
-    // RF2.1: CREAR ORDEN COMPRA
+    // --------------------
+    // RF2.1: CREAR COMPRA
+    // --------------------
     public boolean crearCompra(Compras compra) {
         String sql = "INSERT INTO compras "
                    + "(id_compra, id_proveedor, oc_subtotal, oc_iva, estado_oc, "
@@ -77,10 +82,14 @@ public class ComprasMD {
 
         } catch (SQLException e) {
             System.out.println("No se pudo completar la operación. Intente de nuevo.");
+            e.printStackTrace();
             return false;
         }
     }
 
+    // ---------------------------------------
+    // CLASE DE UTILIDAD: VERIFICAR EXISTENCIA
+    // ---------------------------------------
     public static boolean verificarExistencia(String idCompra) {
         String sql = "SELECT 1 FROM compras WHERE id_compra = ?";
 
@@ -99,13 +108,13 @@ public class ComprasMD {
         }
     }
 
+    // -------------------------
     // RF2.4.1: CONSULTA GENERAL
-        public static List<Compras> obtenerListadoCompras() {
+    // -------------------------
+    public static List<Compras> obtenerListadoCompras() {
         List<Compras> lista = new ArrayList<>();
 
-        String sql = "SELECT * FROM compras "
-                   + "WHERE estado_oc = 'ABI' "
-                   + "ORDER BY id_compra";
+        String sql = "SELECT * FROM compras WHERE estado_oc = 'ABI' ORDER BY id_compra";
 
         try (Connection conn = ConexionPostgreSQL.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -122,7 +131,9 @@ public class ComprasMD {
         return lista;
     }
 
-    // RF2.2: MODIFICAR COMPRA
+    // --------------------
+    // RF2.2: MODIFICAR
+    // --------------------
     public boolean modificarCompra(Compras compra) {
         String sql = "UPDATE compras SET "
                    + "oc_fecha_venc = ?, "
@@ -136,13 +147,13 @@ public class ComprasMD {
             if (compra.getOcFechaVenc() != null) {
                 ps.setDate(1, Date.valueOf(compra.getOcFechaVenc()));
             } else {
-                ps.setDate(1, null);
+                ps.setNull(1, java.sql.Types.DATE);
             }
 
             if (compra.getOcFechaPronto() != null) {
                 ps.setDate(2, Date.valueOf(compra.getOcFechaPronto()));
             } else {
-                ps.setDate(2, null);
+                ps.setNull(2, java.sql.Types.DATE);
             }
 
             ps.setDouble(3, compra.getOcPorDescPronto());
@@ -153,11 +164,14 @@ public class ComprasMD {
 
         } catch (SQLException e) {
             System.out.println("No se pudo completar la operación. Intente de nuevo.");
+            e.printStackTrace();
             return false;
         }
     }
-    
-    // RF2.3: INHABILITAR COMPRA
+
+    // --------------------
+    // RF2.3: INHABILITAR
+    // --------------------
     public boolean eliminarCompra(String idCompra) {
         String sql = "CALL anular_compra(?)";
 
@@ -174,7 +188,9 @@ public class ComprasMD {
         }
     }
 
+    // ---------------------------------------------
     // RF2.4.2: CONSULTA POR PARÁMETROS
+    // ---------------------------------------------
     public List<Compras> obtenerComprasPorParametro(
             String idCompra,
             String idProveedor,
@@ -219,5 +235,29 @@ public class ComprasMD {
         }
 
         return lista;
+    }
+
+    /**
+     * Genera el siguiente ID de compra en formato OC0001, OC0002, etc.
+     * MISMA lógica que FacturasMD.
+     */
+    public static String generarSiguienteIdCompra() {
+        String sql = "SELECT generar_id_compra()";
+
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getString(1);
+            }
+
+            return "OC0001";
+
+        } catch (SQLException e) {
+            System.out.println("Error al generar ID de compra: " + e.getMessage());
+            e.printStackTrace();
+            return "OC0001";
+        }
     }
 }

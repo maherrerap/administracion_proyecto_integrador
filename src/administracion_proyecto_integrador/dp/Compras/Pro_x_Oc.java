@@ -30,107 +30,52 @@ public class Pro_x_Oc {
 
     // ===================== GETTERS =====================
 
-    public String getIdCompra() {
-        return idCompra;
-    }
-
-    public String getIdProducto() {
-        return idProducto;
-    }
-
-    public int getPxoCantidad() {
-        return pxoCantidad;
-    }
-
-    public double getPxoValor() {
-        return pxoValor;
-    }
-
-    public double getPxoSubtotal() {
-        return pxoSubtotal;
-    }
-
-    public String getEstadoPxo() {
-        return estadoPxo;
-    }
+    public String getIdCompra() { return idCompra; }
+    public String getIdProducto() { return idProducto; }
+    public int getPxoCantidad() { return pxoCantidad; }
+    public double getPxoValor() { return pxoValor; }
+    public double getPxoSubtotal() { return pxoSubtotal; }
+    public String getEstadoPxo() { return estadoPxo; }
 
     // ===================== SETTERS =====================
 
-    public void setIdCompra(String idCompra) {
-        this.idCompra = idCompra;
-    }
-
-    public void setIdProducto(String idProducto) {
-        this.idProducto = idProducto;
-    }
-
-    public void setPxoCantidad(int pxoCantidad) {
-        this.pxoCantidad = pxoCantidad;
-    }
-
-    public void setPxoValor(double pxoValor) {
-        this.pxoValor = pxoValor;
-    }
-
-    public void setPxoSubtotal(double pxoSubtotal) {
-        this.pxoSubtotal = pxoSubtotal;
-    }
-
-    public void setEstadoPxo(String estadoPxo) {
-        this.estadoPxo = estadoPxo;
-    }
+    public void setIdCompra(String idCompra) { this.idCompra = idCompra; }
+    public void setIdProducto(String idProducto) { this.idProducto = idProducto; }
+    public void setPxoCantidad(int pxoCantidad) { this.pxoCantidad = pxoCantidad; }
+    public void setPxoValor(double pxoValor) { this.pxoValor = pxoValor; }
+    public void setPxoSubtotal(double pxoSubtotal) { this.pxoSubtotal = pxoSubtotal; }
+    public void setEstadoPxo(String estadoPxo) { this.estadoPxo = estadoPxo; }
 
     // ===================== REGLAS DE NEGOCIO =====================
 
-    /**
-     * Calcula el subtotal del detalle
-     */
     public static double calcularSubtotal(int cantidad, double valor) {
         return cantidad * valor;
     }
 
-    /**
-     * Recalcula el subtotal del objeto actual
-     */
     public void recalcularSubtotal() {
         this.pxoSubtotal = calcularSubtotal(this.pxoCantidad, this.pxoValor);
     }
 
-    /**
-     * Validaciones mínimas del detalle
-     */
     public static void verificarPxo(String idCompra, String idProducto, int cantidad) {
         if (idCompra == null || idCompra.trim().isEmpty())
             throw new IllegalArgumentException("El identificador de la orden de compra es obligatorio.");
-
         if (idProducto == null || idProducto.trim().isEmpty())
             throw new IllegalArgumentException("El identificador del producto es obligatorio.");
-
         if (cantidad <= 0)
             throw new IllegalArgumentException("La cantidad debe ser mayor a 0.");
     }
 
-    // ===================== CONEXIÓN CON MD =====================
+    // ===================== MÉTODOS DP → MD =====================
 
-    /**
-     * Obtiene todos los detalles activos de una orden de compra
-     */
     public static List<Pro_x_Oc> obtenerDetallesCompra(String idCompra) throws Exception {
         return Pro_x_OcMD.obtenerListadoDetallesCompra(idCompra);
     }
 
-    /**
-     * Obtiene un detalle específico de la orden
-     */
     public static Pro_x_Oc obtenerDetalle(String idCompra, String idProducto) throws Exception {
         verificarPxo(idCompra, idProducto, 1);
         return Pro_x_OcMD.obtenerDetalle(idCompra, idProducto);
     }
 
-    /**
-     * Agrega un producto al detalle de la orden de compra.
-     * Si el producto ya existe, se incrementa la cantidad.
-     */
     public static boolean agregarProducto(String idCompra, String idProducto, int cantidad) throws Exception {
         verificarPxo(idCompra, idProducto, cantidad);
 
@@ -145,7 +90,7 @@ public class Pro_x_Oc {
             nuevo.setPxoCantidad(cantidad);
             nuevo.setPxoValor(valorCompra);
             nuevo.recalcularSubtotal();
-            nuevo.setEstadoPxo("ACT"); // Estado inicial activo (borrado lógico)
+            nuevo.setEstadoPxo("ACT");
 
             return Pro_x_OcMD.registrarDetalle(nuevo);
         } else {
@@ -154,9 +99,32 @@ public class Pro_x_Oc {
         }
     }
 
-    /**
-     * Modifica la cantidad del producto y recalcula el subtotal
-     */
+    public static boolean incrementarCantidad(String idCompra, String idProducto, int paso) throws Exception {
+        if (paso <= 0) paso = 1;
+
+        Pro_x_Oc detalle = obtenerDetalle(idCompra, idProducto);
+        if (detalle == null)
+            throw new IllegalArgumentException("No existe el producto en el detalle.");
+
+        int nuevaCantidad = detalle.getPxoCantidad() + paso;
+        return modificarPxo(idCompra, idProducto, nuevaCantidad);
+    }
+
+    public static boolean decrementarCantidad(String idCompra, String idProducto, int paso) throws Exception {
+        if (paso <= 0) paso = 1;
+
+        Pro_x_Oc detalle = obtenerDetalle(idCompra, idProducto);
+        if (detalle == null)
+            throw new IllegalArgumentException("No existe el producto en el detalle.");
+
+        int nuevaCantidad = detalle.getPxoCantidad() - paso;
+
+        if (nuevaCantidad <= 0)
+            return eliminarPxo(idCompra, idProducto);
+
+        return modificarPxo(idCompra, idProducto, nuevaCantidad);
+    }
+
     public static boolean modificarPxo(String idCompra, String idProducto, int nuevaCantidad) throws Exception {
         verificarPxo(idCompra, idProducto, nuevaCantidad);
 
@@ -167,9 +135,6 @@ public class Pro_x_Oc {
                 idCompra, idProducto, nuevaCantidad, nuevoSubtotal);
     }
 
-    /**
-     * Inhabilita lógicamente un producto del detalle (borrado lógico)
-     */
     public static boolean eliminarPxo(String idCompra, String idProducto) throws Exception {
         verificarPxo(idCompra, idProducto, 1);
         return Pro_x_OcMD.inhabilitarDetalle(idCompra, idProducto);
