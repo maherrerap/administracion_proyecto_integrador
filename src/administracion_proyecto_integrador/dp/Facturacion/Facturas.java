@@ -1,4 +1,3 @@
-
 package administracion_proyecto_integrador.dp.Facturacion;
 
 import java.util.List;
@@ -307,6 +306,4 @@ public class Facturas {
     private static boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
     }
-
-
 }
