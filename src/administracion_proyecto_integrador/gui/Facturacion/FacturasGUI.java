@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.table.DefaultTableModel;
 import administracion_proyecto_integrador.dp.Facturacion.Facturas;
+import administracion_proyecto_integrador.gui.Inventarios.ProductosGUI;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -115,7 +116,7 @@ public class FacturasGUI extends JFrame {
         JMenu menuAdmin = crearMenu("Administración");
 
         JMenu subBodega = crearSubMenu("Bodega ▸");
-        subBodega.add(crearMenuItem("Productos", null));
+        subBodega.add(crearMenuItem("Productos", e -> abrirProductos()));
         subBodega.add(crearMenuItem("Recepciones", null));
 
         JMenu subFacturacion = crearSubMenu("Facturación ▸");
@@ -210,6 +211,17 @@ public class FacturasGUI extends JFrame {
     private void abrirFacturasGUI() {
         new FacturasGUI().setVisible(true);
         this.dispose();
+    }
+
+    private void abrirProductos() {
+        // Cerrar la ventana actual de facturas
+        this.dispose();
+
+        // Abrir la ventana de productos
+        SwingUtilities.invokeLater(() -> {
+            ProductosGUI productosGUI = new ProductosGUI();
+            productosGUI.setVisible(true);
+        });
     }
 
     private JComponent crearHeaderContenido() {

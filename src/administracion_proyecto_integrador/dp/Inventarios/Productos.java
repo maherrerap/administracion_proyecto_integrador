@@ -25,6 +25,8 @@ public class Productos {
     private String estadoProd;
     private String idcategoria;
     private String proImagen;
+    private String proUmCompraDescripcion;
+    private String categoriaDescripcion;
     
     // Constructores
     
@@ -33,11 +35,12 @@ public class Productos {
     
     // Constructor Completo
 
-    public Productos(String idProducto, String proDescripcion, String proUmCompra, String proUmVenta, double proValorCompra, double proPrecioVenta, int proSaldoInicial, int proQtyIngresos, int proQtyEgresos, int proQtyAjustes, int proSaldoFinal, String estadoProd, String idcategoria, String proImagen) {
+    public Productos(String idProducto, String proDescripcion, String proUmCompra, String proUmVenta, String proUmVentaDescripcion, double proValorCompra, double proPrecioVenta, int proSaldoInicial, int proQtyIngresos, int proQtyEgresos, int proQtyAjustes, int proSaldoFinal, String estadoProd, String idcategoria, String proImagen) {
         this.idProducto = idProducto;
         this.proDescripcion = proDescripcion;
         this.proUmCompra = proUmCompra;
         this.proUmVenta = proUmVenta;
+        this.proUmVentaDescripcion = proUmVentaDescripcion;
         this.proValorCompra = proValorCompra;
         this.proPrecioVenta = proPrecioVenta;
         this.proSaldoInicial = proSaldoInicial;
@@ -49,9 +52,9 @@ public class Productos {
         this.idcategoria = idcategoria;
         this.proImagen = proImagen;
     }
+
     
-    
-    // Getters
+    // GETTERS
 
     public String getIdProducto() {
         return idProducto;
@@ -68,7 +71,7 @@ public class Productos {
     public String getProUmVenta() {
         return proUmVenta;
     }
-    
+
     public String getProUmVentaDescripcion() {
         return proUmVentaDescripcion;
     }
@@ -112,8 +115,16 @@ public class Productos {
     public String getProImagen() {
         return proImagen;
     }
+
+    public String getProUmCompraDescripcion() {
+        return proUmCompraDescripcion;
+    }
+
+    public String getCategoriaDescripcion() {
+        return categoriaDescripcion;
+    }
     
-    // Setters
+    // SETTERS
 
     public void setIdProducto(String idProducto) {
         this.idProducto = idProducto;
@@ -167,21 +178,28 @@ public class Productos {
         this.estadoProd = estadoProd;
     }
 
-    public void setIdcategoria(String id_categoria) {
-        this.idcategoria = id_categoria;
+    public void setIdcategoria(String idcategoria) {
+        this.idcategoria = idcategoria;
     }
 
     public void setProImagen(String proImagen) {
         this.proImagen = proImagen;
     }
     
+    public void setProUmCompraDescripcion(String proUmCompraDescripcion) {
+        this.proUmCompraDescripcion = proUmCompraDescripcion;
+    }
+
+    public void setCategoriaDescripcion(String categoriaDescripcion) {
+        this.categoriaDescripcion = categoriaDescripcion;
+    }
+
     // Métodos de Conexión con DB
     
     /**
      * RF4.4.1: Consulta General de Productos
      * Obtiene el listado completo de productos desde el MD
      */
-    
     public static List<Productos> obtenerProductos() throws Exception {
         return ProductoMD.obtenerListadoProductos();
     }
@@ -194,9 +212,7 @@ public class Productos {
     }   
  
     /**
-     * RF6.1: Creación Producto
-     * Recibe un objeto Productos con los datos cargados desde la GUI
-     * y lo envia a la capa MD para que se inserte en la BD.
+     * RF4.1: Creación Producto
      */
     
     public static boolean grabarProducto(Productos producto) {
@@ -234,7 +250,93 @@ public class Productos {
         return productoMD.obtenerProductosPorParametro(idProducto, proDescripcion, idCategoria);
     }
     
-// ===================== MÉTODOS INTERMEDIARIOS PARA GESTIÓN DE STOCK =====================
+    
+    // ===================== MÉTODOS PARALA CREACIÓN DE PRODUCTOS =====================
+    
+
+    // GENERAR ID AUTOMÁTICO
+    public static String generarNuevoId() {
+        return ProductoMD.generarIdProducto();
+    }
+
+    // OBTENER DATOS PARA COMBOBOX DE LA DESCRIPCION DE UNIDADES DE MEDIDA
+    public static List<UnidadMedida> obtenerUnidadesMedida() {
+        List<ProductoMD.UnidadMedida> unidadesMD = ProductoMD.obtenerUnidadesMedida();
+        List<UnidadMedida> unidades = new ArrayList<>();
+
+        for (ProductoMD.UnidadMedida um : unidadesMD) {
+            unidades.add(new UnidadMedida(um.getId(), um.getDescripcion()));
+        }
+
+        return unidades;
+    }
+
+    // OBTENER DATOS PARA COMBOBOX DE LA DESCRIPCION DE CATEGORIAS
+    public static List<Categoria> obtenerCategorias() {
+        List<ProductoMD.Categoria> categoriasMD = ProductoMD.obtenerCategorias();
+        List<Categoria> categorias = new ArrayList<>();
+
+        for (ProductoMD.Categoria cat : categoriasMD) {
+            categorias.add(new Categoria(cat.getId(), cat.getDescripcion()));
+        }
+
+        return categorias;
+    }
+    
+    // RECALCULAR SALDO FINAL TRAS LA INSERCIÓN DE UN NUEVO PRODUCTO
+    public void calcularSaldoFinal() {
+        this.proSaldoFinal = this.proSaldoInicial + this.proQtyIngresos - this.proQtyEgresos;
+    }
+
+    // INICIALIZAR VALORES POR DEFECTO DE UN NUEVO PRODUCTO
+    public void inicializarNuevoProducto() {
+        this.proQtyEgresos = 0;
+        this.proQtyAjustes = 0;
+        this.estadoProd = "ACT";
+        this.proImagen = null;
+        // Los ingresos toman el mismo valor que el saldo inicial
+        this.proQtyIngresos = this.proSaldoInicial;
+
+        // Calcular el saldo final
+        calcularSaldoFinal();
+    }
+    
+    // Clase para acceder a Unidades de Medida
+    public static class UnidadMedida {
+        private final String id;
+        private final String descripcion;
+
+        public UnidadMedida(String id, String descripcion) {
+            this.id = id;
+            this.descripcion = descripcion;
+        }
+
+        public String getId() { return id; }
+        public String getDescripcion() { return descripcion; }
+
+        @Override
+        public String toString() { return descripcion; }
+    }
+
+    // Clase para acceder a Categorias
+    public static class Categoria {
+        private final String id;
+        private final String descripcion;
+
+        public Categoria(String id, String descripcion) {
+            this.id = id;
+            this.descripcion = descripcion;
+        }
+
+        public String getId() { return id; }
+        public String getDescripcion() { return descripcion; }
+
+        @Override
+        public String toString() { return descripcion; }
+    }
+    
+    
+    // ===================== MÉTODOS INTERMEDIARIOS PARA GESTIÓN DE STOCK  (FACTURACION) =====================
     
     /**
      * Actualizar stock cuando se realiza una venta
@@ -272,6 +374,8 @@ public class Productos {
     public static int obtenerStockDisponible(String idProducto) throws Exception {
         return ProductoMD.obtenerStockDisponible(idProducto);
     }
+    
+    
     
     // ===================== VALIDACIONES (verificarProd) =====================
 
