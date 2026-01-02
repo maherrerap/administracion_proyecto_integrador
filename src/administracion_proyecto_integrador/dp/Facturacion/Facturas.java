@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.time.LocalDate;
 
 import administracion_proyecto_integrador.md.Facturacion.FacturasMD;
-import administracion_proyecto_integrador.md.Facturacion.ClienteMD;
 import administracion_proyecto_integrador.dp.Facturacion.Clientes;
 
 public class Facturas {
@@ -182,11 +181,13 @@ public class Facturas {
     
     
     /**
-     * METODO PARA COMBOBO DE FACTURACION
+     * METODO PARA COMBOBOX DE FACTURACION
      */
     
+    
+    // METODO PARA OBTENER EL LISTADO DE LOS CLIENTES ACTIVOS.
     public static List<Clientes> obtenerClientesActivos () throws Exception {
-        return ClienteMD.obtenerListadoClientes(); 
+        return Clientes.obtenerClientes(); 
     }
     
     /**

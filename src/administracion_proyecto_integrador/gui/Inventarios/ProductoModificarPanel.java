@@ -211,7 +211,7 @@ public class ProductoModificarPanel extends JPanel {
         panel.setBackground(Color.WHITE);
 
         JButton btnCancelar = crearBoton("Volver");
-        JButton btnGuardar = crearBoton("Guardar Cambios");
+        JButton btnGuardar = crearBoton("Actualizar Producto");
 
         btnCancelar.addActionListener(e -> {
             JOptionPane.showMessageDialog(

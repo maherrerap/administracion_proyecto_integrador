@@ -6,7 +6,6 @@ import administracion_proyecto_integrador.conexion.ConexionPostgreSQL;
 
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -191,7 +190,7 @@ public class Pro_x_FacMD {
                         return true;
                     } else {
                         conn.rollback();
-                        System.out.println("Error al ajustar stock del producto.");
+                        System.out.println("No se pudo completar la operación. Intente de nuevo.");
                         return false;
                     }
                 }
@@ -204,9 +203,9 @@ public class Pro_x_FacMD {
             try {
                 if (conn != null) conn.rollback();
             } catch (SQLException ex) {
-                System.out.println("Error al revertir transacción: " + ex.getMessage());
+                System.out.println("No se pudo completar la operación. Intente de nuevo.");
             }
-            System.out.println("No se pudo completar la operación. Intente de nuevo.");
+            
             return false;
         } finally {
             try {
@@ -215,7 +214,7 @@ public class Pro_x_FacMD {
                     conn.close();
                 }
             } catch (SQLException e) {
-                System.out.println("Error al cerrar conexión: " + e.getMessage());
+                System.out.println("No se pudo completar la operación. Intente de nuevo.");
             }
         }
     }
@@ -289,19 +288,10 @@ public class Pro_x_FacMD {
                 if (rs.next()) {
                     double subtotal = rs.getDouble("total_subtotal");
 
-                    // DEBUG: Imprimir valores
-                    System.out.println("=== ACTUALIZAR TOTALES CABECERA ===");
-                    System.out.println("ID Factura: " + idFactura);
-                    System.out.println("Subtotal calculado: " + subtotal);
-
                     // Calcula el IVA (15%)
                     double porcentajeIVA = 0.15;
                     double iva = subtotal * porcentajeIVA;
                     double total = subtotal + iva;
-
-                    System.out.println("IVA (15%): " + iva);
-                    System.out.println("Total: " + total);
-                    System.out.println("===================================");
 
                     // Actualizar la cabecera
                     try (PreparedStatement psUpdate = conn.prepareStatement(sqlActualizar)) {
@@ -311,16 +301,13 @@ public class Pro_x_FacMD {
                         psUpdate.setString(4, idFactura);
 
                         int filasActualizadas = psUpdate.executeUpdate();
-                        System.out.println("Filas actualizadas en cabecera: " + filasActualizadas);
-
                         return filasActualizadas > 0;
                     }
                 }
             }
 
         } catch (SQLException e) {
-            System.out.println("Error al actualizar totales de cabecera: " + e.getMessage());
-            e.printStackTrace(); // Agregar stack trace completo
+            System.out.println("No se pudo completar la operación. Intente de nuevo.");
             return false;
         }
 
@@ -348,21 +335,12 @@ public class Pro_x_FacMD {
 
                 int result = ps.executeUpdate();
 
-                System.out.println("=== REGISTRAR DETALLE ===");
-                System.out.println("Factura: " + detalle.getIdFactura());
-                System.out.println("Producto: " + detalle.getIdProducto());
-                System.out.println("Cantidad: " + detalle.getPxfCantidad());
-                System.out.println("Precio: " + detalle.getPxfPrecio());
-                System.out.println("Subtotal: " + detalle.getPxfSubtotal());
-                System.out.println("Filas insertadas: " + result);
-
                 if (result > 0) {
                     // 2. Actualizar stock del producto
                     boolean stockActualizado = administracion_proyecto_integrador.md.Inventarios.ProductoMD
                             .actualizarStockPorVenta(detalle.getIdProducto(), detalle.getPxfCantidad());
 
                     if (stockActualizado) {
-                        System.out.println("Stock actualizado correctamente");
 
                         // IMPORTANTE: Hacer flush/commit parcial para que el detalle esté visible
                         conn.commit();
@@ -372,17 +350,16 @@ public class Pro_x_FacMD {
                         boolean cabeceraActualizada = actualizarTotalesCabecera(detalle.getIdFactura());
 
                         if (cabeceraActualizada) {
-                            System.out.println("Cabecera actualizada correctamente");
                             conn.commit(); // Confirmar transacción final
                             return true;
                         } else {
-                            System.out.println("ERROR: No se pudo actualizar la cabecera");
+                            System.out.println("No se pudo completar la operación. Intente de nuevo.");
                             conn.rollback();
                             return false;
                         }
                     } else {
                         conn.rollback(); // Revertir si falla actualización de stock
-                        System.out.println("Error al actualizar stock del producto.");
+                        System.out.println("No se pudo completar la operación. Intente de nuevo.");
                         return false;
                     }
                 }
@@ -394,10 +371,8 @@ public class Pro_x_FacMD {
             try {
                 if (conn != null) conn.rollback();
             } catch (SQLException ex) {
-                System.out.println("Error al revertir transacción: " + ex.getMessage());
+                System.out.println("No se pudo completar la operación. Intente de nuevo.");
             }
-            System.out.println("No se pudo completar la operación. Intente de nuevo.");
-            e.printStackTrace();
             return false;
         } finally {
             try {
@@ -406,7 +381,7 @@ public class Pro_x_FacMD {
                     conn.close();
                 }
             } catch (SQLException e) {
-                System.out.println("Error al cerrar conexión: " + e.getMessage());
+                System.out.println("No se pudo completar la operación. Intente de nuevo.");
             }
         }
     }
@@ -477,7 +452,7 @@ public class Pro_x_FacMD {
                         return true;
                     } else {
                         conn.rollback();
-                        System.out.println("Error al revertir stock del producto.");
+                        System.out.println("No se pudo completar la operación. Intente de nuevo.");
                         return false;
                     }
                 }
@@ -490,9 +465,8 @@ public class Pro_x_FacMD {
             try {
                 if (conn != null) conn.rollback();
             } catch (SQLException ex) {
-                System.out.println("Error al revertir transacción: " + ex.getMessage());
+                System.out.println("No se pudo completar la operación. Intente de nuevo.");
             }
-            System.out.println("No se pudo completar la operación. Intente de nuevo.");
             return false;
         } finally {
             try {
@@ -501,7 +475,7 @@ public class Pro_x_FacMD {
                     conn.close();
                 }
             } catch (SQLException e) {
-                System.out.println("Error al cerrar conexión: " + e.getMessage());
+                System.out.println("No se pudo completar la operación. Intente de nuevo.");
             }
         }
     }
@@ -533,7 +507,7 @@ public class Pro_x_FacMD {
             return result > 0;
 
         } catch (SQLException e) {
-            System.out.println("Error al actualizar cantidad: " + e.getMessage());
+            System.out.println("No se pudo completar la operación. Intente de nuevo.");
             return false;
         }
     }

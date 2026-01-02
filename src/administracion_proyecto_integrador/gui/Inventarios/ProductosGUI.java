@@ -56,15 +56,12 @@ public class ProductosGUI extends JFrame {
         root.setBackground(Color.WHITE);
         setContentPane(root);
 
-        // Barra superior
-        root.add(crearNavbar(), BorderLayout.NORTH);
-
         // Contenedor con CardLayout para cambiar entre vistas
         cardLayout = new CardLayout();
         contenedorPrincipal = new JPanel(cardLayout);
         contenedorPrincipal.setBackground(Color.WHITE);
 
-        // Panel del catálogo
+        // Panel del catálogo (ahora incluye el navbar)
         panelCatalogo = crearPanelCatalogo();
         contenedorPrincipal.add(panelCatalogo, "CATALOGO");
 
@@ -545,6 +542,9 @@ public class ProductosGUI extends JFrame {
     private JPanel crearPanelCatalogo() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
+
+        // AGREGAR EL NAVBAR AL PANEL DEL CATÁLOGO
+        panel.add(crearNavbar(), BorderLayout.NORTH);
 
         // Centro (contenido)
         JPanel content = new JPanel(new BorderLayout());

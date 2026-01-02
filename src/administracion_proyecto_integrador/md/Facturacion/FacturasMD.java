@@ -66,7 +66,6 @@ public class FacturasMD {
             return filas > 0;
         } catch (SQLException e) {
             System.out.println("No se pudo completar la operación. Intente de nuevo.");
-            e.printStackTrace();
             return false;
         }
     }
@@ -159,7 +158,6 @@ public class FacturasMD {
             ps.setDouble(2, factura.getFacSubtotal());
             ps.setDouble(3, factura.getFacIva());
 
-            // Conversión correcta de LocalDate a java.sql.Date
             if (factura.getFacFechaPago() != null) {
                 ps.setDate(4, java.sql.Date.valueOf(factura.getFacFechaPago()));
             } else {
@@ -175,7 +173,6 @@ public class FacturasMD {
 
         } catch (SQLException e) {
             System.out.println("No se pudo completar la operación. Intente de nuevo.");
-            e.printStackTrace();
             return false;
         }
     }
@@ -256,6 +253,7 @@ public class FacturasMD {
         }
         return lista;
     }
+    
     /**
      * Genera el siguiente ID de factura en formato FAC0001, FAC0002, etc.
      */
@@ -274,9 +272,9 @@ public class FacturasMD {
             return "FAC0001";
 
         } catch (SQLException e) {
-            System.out.println("Error al generar ID de factura: " + e.getMessage());
-            e.printStackTrace();
-            // En caso de error, devolver el primer ID
+            System.out.println("No se pudo completar la operación. Intente de nuevo.");
+            
+            // Si falla, devolver el primer ID
             return "FAC0001";
         }
     }

@@ -8,9 +8,11 @@ import administracion_proyecto_integrador.dp.Facturacion.Clientes;
 
 public class ConsultaFacturasGUI extends JDialog {
     
+    // Colores Estandar en la Aplicación
     private static final Color NAVY_BTN = new Color(14, 33, 55);
     private static final Color AZUL_LABEL = new Color(30, 86, 198);
     
+    // Componentes
     private JComboBox<FacturaItem> cmbIdFactura;
     private JComboBox<ClienteItem> cmbCliente;
     private JTextField txtDescripcion;
@@ -227,6 +229,7 @@ public class ConsultaFacturasGUI extends JDialog {
     
     private void cargarDatos() {
         try {
+            
             // Cargar facturas para el ComboBox
             cmbIdFactura.removeAllItems();
             cmbIdFactura.addItem(new FacturaItem("")); // Opción vacía
@@ -247,7 +250,7 @@ public class ConsultaFacturasGUI extends JDialog {
             
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "Error al cargar los datos: " + e.getMessage(),
+                "No se pudo completar la operación. Intente de nuevo.",
                 "Error",
                 JOptionPane.ERROR_MESSAGE);
         }
@@ -309,7 +312,7 @@ public class ConsultaFacturasGUI extends JDialog {
             
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "Error al realizar la búsqueda: " + e.getMessage(),
+                "No se pudo completar la operación. Intente de nuevo.",
                 "Error",
                 JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();

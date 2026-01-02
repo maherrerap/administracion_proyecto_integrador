@@ -11,11 +11,10 @@ import java.awt.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.text.DecimalFormat;
 import java.util.List;
-import java.text.SimpleDateFormat;
 
 public class DetalleFacturaGUI extends JFrame {
     
-    // Componentes de la interfaz
+    // Componentes
     private JLabel lblTitulo;
     private JLabel lblNumFactura, lblCliente, lblDescripcion;
     private JLabel lblFechaEmision, lblFechaPago, lblEstado;
@@ -46,11 +45,9 @@ public class DetalleFacturaGUI extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         
-        // Panel principal con BorderLayout
         JPanel panelPrincipal = new JPanel(new BorderLayout(10, 10));
         panelPrincipal.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
-        // Panel superior (título y botón)
         JPanel panelSuperior = new JPanel(new BorderLayout());
         
         lblTitulo = new JLabel("Detalle de Factura");
@@ -285,7 +282,6 @@ public class DetalleFacturaGUI extends JFrame {
                 "Error al cargar los datos de la factura: " + e.getMessage(), 
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
         }
     }
     
@@ -296,7 +292,7 @@ public class DetalleFacturaGUI extends JFrame {
             List<Pro_x_Fac> detalles = Pro_x_Fac.obtenerDetallesFactura(idFacturaActual);
 
             for (Pro_x_Fac detalle : detalles) {
-                // Obtener el nombre real del producto desde la BD
+                // Obtener el nombre real del producto desde la BD pasando por DP
                 String nombreProducto = Pro_x_Fac.obtenerNombreProducto(detalle.getIdProducto());
 
                 Object[] fila = {
@@ -313,7 +309,7 @@ public class DetalleFacturaGUI extends JFrame {
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, 
-                "Error al cargar los detalles: " + e.getMessage(), 
+                "No se pudo completar la operación. Intente de nuevo.", 
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
         }
@@ -347,7 +343,7 @@ public class DetalleFacturaGUI extends JFrame {
         );
         dialog.setVisible(true);
 
-        // Si se agregó un producto, recargar la tabla
+        // Se recarga la tabla al añadir un producto
         if (dialog.isProductoAgregado()) {
             cargarDetalles();
         }
@@ -361,14 +357,14 @@ public class DetalleFacturaGUI extends JFrame {
                 cargarDetalles();
             } else {
                 JOptionPane.showMessageDialog(this, 
-                    "No se pudo incrementar la cantidad", 
+                    "No se pudo completar la operación. Intente de nuevo.", 
                     "Error", 
                     JOptionPane.ERROR_MESSAGE);
             }
             
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, 
-                "Error: " + e.getMessage(), 
+                "No se pudo completar la operación. Intente de nuevo.", 
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
         }
@@ -382,14 +378,14 @@ public class DetalleFacturaGUI extends JFrame {
                 cargarDetalles();
             } else {
                 JOptionPane.showMessageDialog(this, 
-                    "No se pudo decrementar la cantidad", 
+                    "No se pudo completar la operación. Intente de nuevo.", 
                     "Error", 
                     JOptionPane.ERROR_MESSAGE);
             }
             
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, 
-                "Error: " + e.getMessage(), 
+                "No se pudo completar la operación. Intente de nuevo.", 
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
         }

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 public class FacturasGUI extends JFrame {
 
-    // Colores similares a la captura
+    // Colores Estandar en la Aplicación
     private static final Color NAVY = new Color(8, 26, 43);
     private static final Color NAVY_BTN = new Color(14, 33, 55);
     private static final Color AZUL_VER = new Color(30, 86, 198);
@@ -65,7 +65,7 @@ public class FacturasGUI extends JFrame {
         // Paginación
         content.add(crearPaginacion(), BorderLayout.SOUTH);
 
-        // Cargar datos desde la base de datos
+        // Cargar datos desde la base de datos pasando por DP
         cargarDatosMock();
     }
 
@@ -344,7 +344,7 @@ public class FacturasGUI extends JFrame {
 
         JButton btnPrimera = crearBotonPaginacion("|< Primera");
         JButton btnAnterior = crearBotonPaginacion("< Anterior");
-        lblPagina = new JLabel("Página 1 de 5");
+        lblPagina = new JLabel("Página 1 de -");
         lblPagina.setFont(new Font("SansSerif", Font.BOLD, 12));
         JButton btnSiguiente = crearBotonPaginacion("Siguiente >");
         JButton btnUltima = crearBotonPaginacion("Última >|");
@@ -418,7 +418,7 @@ public class FacturasGUI extends JFrame {
         SwingUtilities.invokeLater(() -> {
             DetalleFacturaGUI detalleVentana = new DetalleFacturaGUI(idFactura);
             detalleVentana.setVisible(true);
-            dispose(); // Cerrar la ventana de FacturasGUI
+            dispose(); 
         });
     }
 
@@ -443,26 +443,27 @@ public class FacturasGUI extends JFrame {
         );
 
         if (opcion == JOptionPane.YES_OPTION) {
-            boolean eliminado = administracion_proyecto_integrador.dp.Facturacion.Facturas
-                    .eliminarFactura(idFactura);
+            SwingUtilities.invokeLater(() -> {
+                boolean eliminado = administracion_proyecto_integrador.dp.Facturacion.Facturas
+                        .eliminarFactura(idFactura);
 
-            if (eliminado) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Factura inhabilitada correctamente.",
-                        "Operación exitosa",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
-
-                recargarDatos();
-            } else {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "No se pudo inhabilitar la factura.",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-            }
+                if (eliminado) {
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Factura inhabilitada correctamente.",
+                            "Operación exitosa",
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+                    recargarDatos();
+                } else {
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "No se pudo completar la operación. Intente de nuevo.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                }
+            });
         }
     }
 
@@ -483,10 +484,9 @@ public class FacturasGUI extends JFrame {
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, 
-                "Error al cargar las facturas: " + e.getMessage(),
+                "No se pudo completar la operación. Intente de nuevo.",
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
             lblPagina.setText("Página 1 de 1");
         }
     }
@@ -558,12 +558,14 @@ public class FacturasGUI extends JFrame {
     static class ButtonEditor extends DefaultCellEditor {
         private final JButton button;
         private boolean clicked;
+        private boolean wasCanceled;  
         private int row;
         private final RowAction action;
 
         public ButtonEditor(JCheckBox checkBox, String text, Color bg, RowAction action) {
             super(checkBox);
             this.action = action;
+            this.wasCanceled = false; 
 
             button = new JButton(text);
             button.setOpaque(true);
@@ -575,7 +577,8 @@ public class FacturasGUI extends JFrame {
             button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             button.addActionListener(new ActionListener() {
-                @Override public void actionPerformed(ActionEvent e) {
+                @Override 
+                public void actionPerformed(ActionEvent e) {
                     clicked = true;
                     fireEditingStopped();
                 }
@@ -583,15 +586,17 @@ public class FacturasGUI extends JFrame {
         }
 
         @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        public Component getTableCellEditorComponent(JTable table, Object value, 
+                                                      boolean isSelected, int row, int column) {
             this.row = row;
             this.clicked = false;
+            this.wasCanceled = false; 
             return button;
         }
 
         @Override
         public Object getCellEditorValue() {
-            if (clicked) {
+            if (clicked && !wasCanceled) {  
                 action.run(row);
             }
             clicked = false;

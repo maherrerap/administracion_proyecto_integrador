@@ -11,7 +11,7 @@ import java.util.List;
 
 public class CrearFacturaGUI extends JFrame {
 
-    // Colores
+    // Colores Estandar en la Aplicación
     private static final Color NAVY_BTN = new Color(14, 33, 55);
     private static final Color AZUL_LABEL = new Color(30, 86, 198);
 
@@ -34,7 +34,6 @@ public class CrearFacturaGUI extends JFrame {
         root.setBackground(Color.WHITE);
         setContentPane(root);
 
-        // Contenido centrado con ancho máximo
         JPanel contentWrapper = new JPanel(new GridBagLayout());
         contentWrapper.setBackground(Color.WHITE);
         
@@ -61,7 +60,7 @@ public class CrearFacturaGUI extends JFrame {
         // Formulario
         content.add(crearFormulario(), BorderLayout.CENTER);
         
-        // Cargar el ID automático al iniciar
+        // Cargar el ID automático
         cargarSiguienteIdFactura();
     }
 
@@ -124,7 +123,7 @@ public class CrearFacturaGUI extends JFrame {
         cmbClientes.setPreferredSize(new Dimension(0, 40));
         cmbClientes.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         
-        // Cargar clientes desde BD
+        // Cargar clientes desde BD pasando por DP
         cargarClientes();
 
         fila2.add(lblCliente, BorderLayout.NORTH);
@@ -273,7 +272,7 @@ public class CrearFacturaGUI extends JFrame {
             txtNumFactura.setText(siguienteId);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, 
-                "Error al generar el ID de factura: " + e.getMessage(), 
+                "No se pudo completar la operación. Intente de nuevo.", 
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
             // En caso de error, establecer un valor por defecto
@@ -295,7 +294,7 @@ public class CrearFacturaGUI extends JFrame {
             
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, 
-                "Error al cargar clientes: " + e.getMessage(), 
+                "No se pudo completar la operación. Intente de nuevo.", 
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
             
@@ -367,14 +366,14 @@ public class CrearFacturaGUI extends JFrame {
 
             } else {
                 JOptionPane.showMessageDialog(this, 
-                    "No se pudo crear la factura. Intente nuevamente.", 
+                    "No se pudo completar la operación. Intente de nuevo.", 
                     "Error", 
                     JOptionPane.ERROR_MESSAGE);
             }
 
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, 
-                "Error al crear la factura: " + ex.getMessage(), 
+                "No se pudo completar la operación. Intente de nuevo.", 
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
         }

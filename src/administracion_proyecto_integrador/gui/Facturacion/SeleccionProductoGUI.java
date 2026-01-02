@@ -9,6 +9,8 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 public class SeleccionProductoGUI extends JDialog {
+    
+    // Componentes de la cabecera
     private JLabel lblCantidad; 
     private JComboBox<ProductoItem> cmbProductos;
     private JTextField txtPrecioVenta;
@@ -26,7 +28,7 @@ public class SeleccionProductoGUI extends JDialog {
         private String nombre;
         private double precio;
         private int stockDisponible;
-        private String unidadMedida; // NUEVO
+        private String unidadMedida; 
         
 
         public ProductoItem(String id, String nombre, double precio, int stockDisponible, String unidadMedida) {
@@ -34,13 +36,13 @@ public class SeleccionProductoGUI extends JDialog {
             this.nombre = nombre;
             this.precio = precio;
             this.stockDisponible = stockDisponible;
-            this.unidadMedida = unidadMedida; // NUEVO
+            this.unidadMedida = unidadMedida; 
         }
 
         public String getId() { return id; }
         public double getPrecio() { return precio; }
         public int getStockDisponible() { return stockDisponible; }
-        public String getUnidadMedida() { return unidadMedida; } // NUEVO
+        public String getUnidadMedida() { return unidadMedida; } 
 
         @Override
         public String toString() {
@@ -108,9 +110,8 @@ public class SeleccionProductoGUI extends JDialog {
         txtPrecioVenta.setBackground(new Color(240, 240, 240));
         panelFormulario.add(txtPrecioVenta, gbc);
         
-        // Cantidad a comprar - AHORA ES UN ATRIBUTO DE CLASE
         gbc.gridy = 4; gbc.weightx = 0;
-        lblCantidad = new JLabel("Cantidad a comprar"); // Sin "JLabel" porque ahora es atributo
+        lblCantidad = new JLabel("Cantidad a comprar"); 
         lblCantidad.setFont(new Font("Arial", Font.PLAIN, 14));
         panelFormulario.add(lblCantidad, gbc);
         
@@ -182,7 +183,7 @@ public class SeleccionProductoGUI extends JDialog {
                         prod.getProDescripcion(),
                         prod.getProPrecioVenta(),
                         prod.getProSaldoFinal(),
-                        prod.getProUmVentaDescripcion() != null ? prod.getProUmVentaDescripcion() : "Unidad" // NUEVO
+                        prod.getProUmVentaDescripcion() != null ? prod.getProUmVentaDescripcion() : "Unidad" 
                     );
                     cmbProductos.addItem(item);
                 }
@@ -190,7 +191,7 @@ public class SeleccionProductoGUI extends JDialog {
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "Error al cargar los productos: " + e.getMessage(),
+                "No se pudo completar la operación. Intente de nuevo.",
                 "Error",
                 JOptionPane.ERROR_MESSAGE);
         }
@@ -207,12 +208,12 @@ public class SeleccionProductoGUI extends JDialog {
 
             // Actualizar el label con la unidad de medida
             String unidad = selected.getUnidadMedida();
-            lblCantidad.setText("Cantidad a comprar (" + unidad + ")"); // NUEVO
+            lblCantidad.setText("Cantidad a comprar (" + unidad + ")"); 
         } else {
             txtPrecioVenta.setText("$.....");
             txtCantidad.setText("");
             txtCantidad.setEnabled(false);
-            lblCantidad.setText("Cantidad a comprar"); // Volver al texto original
+            lblCantidad.setText("Cantidad a comprar");
         }
 
 
@@ -288,11 +289,11 @@ public class SeleccionProductoGUI extends JDialog {
             return;
         }
 
-        // ============================================================
-        // NUEVA VALIDACIÓN: Obtener stock REAL directamente de la BD
-        // ============================================================
+        // ===========================================================================
+        // NUEVA VALIDACIÓN: Obtener stock REAL directamente de la BD (pasando por DP)
+        // ===========================================================================
         try {
-            // 1. Obtener el stock ACTUAL del producto (sin considerar esta factura)
+            // 1. Obtener el stock ACTUAL del producto
             Productos producto = Productos.obtenerProductoPorId(selected.getId());
             if (producto == null) {
                 JOptionPane.showMessageDialog(this,
@@ -304,15 +305,15 @@ public class SeleccionProductoGUI extends JDialog {
 
             int stockRealDisponible = producto.getProSaldoFinal();
 
-            // 2. Obtener cuánto ya está en el detalle de ESTA factura
+            // 2. Obtener cuánto ya está en el detalle
             Pro_x_Fac existente = Pro_x_Fac.obtenerDetalle(idFactura, selected.getId());
             int cantidadYaEnDetalle = (existente != null) ? existente.getPxfCantidad() : 0;
 
             // 3. Calcular el stock disponible para esta operación
-            // Stock disponible = Stock actual + lo que ya tengo en el detalle
+            // Stock disponible = Stock actual + lo que hay en el detalle
             int stockDisponibleParaEstaFactura = stockRealDisponible + cantidadYaEnDetalle;
 
-            // 4. Calcular el total que tendría después de agregar
+            // 4. Calcular el total después de agregar
             int cantidadTotalDespuesDeAgregar = cantidadYaEnDetalle + cantidad;
 
             // 5. Validar
@@ -333,19 +334,9 @@ public class SeleccionProductoGUI extends JDialog {
                 txtCantidad.selectAll();
                 return;
             }
-
-            // Debug info (opcional - remover en producción)
-            System.out.println("=== DEBUG STOCK ===");
-            System.out.println("Stock real en BD: " + stockRealDisponible);
-            System.out.println("Ya en detalle: " + cantidadYaEnDetalle);
-            System.out.println("Stock disponible para esta factura: " + stockDisponibleParaEstaFactura);
-            System.out.println("Intentando agregar: " + cantidad);
-            System.out.println("Total después: " + cantidadTotalDespuesDeAgregar);
-            System.out.println("==================");
-
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this,
-                "Error al validar stock: " + ex.getMessage(),
+                "No se pudo completar la operación. Intente de nuevo.",
                 "Error",
                 JOptionPane.ERROR_MESSAGE);
             return;
@@ -364,14 +355,14 @@ public class SeleccionProductoGUI extends JDialog {
                 dispose();
             } else {
                 JOptionPane.showMessageDialog(this,
-                    "No se pudo agregar el producto. Verifique que la factura esté en estado 'pendiente'.",
+                    "No se pudo completar la operación. Intente de nuevo.",
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
             }
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "Error al agregar el producto: " + e.getMessage(),
+                "No se pudo completar la operación. Intente de nuevo.",
                 "Error",
                 JOptionPane.ERROR_MESSAGE);
         }

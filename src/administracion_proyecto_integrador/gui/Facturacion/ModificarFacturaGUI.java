@@ -212,7 +212,7 @@ public class ModificarFacturaGUI extends JFrame {
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "Error al cargar clientes: " + e.getMessage(),
+                "No se pudo completar la operación. Intente de nuevo.",
                 "Error",
                 JOptionPane.ERROR_MESSAGE);
         }
@@ -428,13 +428,9 @@ public class ModificarFacturaGUI extends JFrame {
             button.setFocusPainted(false);
             button.setBorderPainted(false);
             button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-            // CAMBIO CRÍTICO: No llamar fireEditingStopped() aquí
             button.addActionListener(e -> {
                 isPushed = true;
-                // Ejecutar la acción ANTES de detener la edición
                 executeAction();
-                // Detener la edición después
                 stopCellEditing();
             });
         }
@@ -503,7 +499,6 @@ public class ModificarFacturaGUI extends JFrame {
                 }
                 
                 if (factura.getFacFechaPago() != null) {
-                    // Convertir LocalDate a java.util.Date para JDateChooser
                     java.util.Date date = java.sql.Date.valueOf(factura.getFacFechaPago());
                     dcFechaPago.setDate(date);
                 }
@@ -514,7 +509,7 @@ public class ModificarFacturaGUI extends JFrame {
             
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "Error al cargar los datos de la factura: " + e.getMessage(),
+                "No se pudo completar la operación. Intente de nuevo.",
                 "Error",
                 JOptionPane.ERROR_MESSAGE);
         }
@@ -546,7 +541,7 @@ public class ModificarFacturaGUI extends JFrame {
             
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "Error al cargar los detalles: " + e.getMessage(),
+                "No se pudo completar la operación. Intente de nuevo.",
                 "Error",
                 JOptionPane.ERROR_MESSAGE);
         }
@@ -582,7 +577,7 @@ public class ModificarFacturaGUI extends JFrame {
             int cantidadActual = (int) modeloTabla.getValueAt(filaSeleccionada, 2);
             int nuevaCantidad = cantidadActual + 1;
 
-            // Verificar stock disponible REAL (sin actualizar nada aún)
+            // Verificar stock disponible REAL 
             int stockDisponible = Productos.obtenerStockDisponible(idProducto);
             if (stockDisponible <= 0) {
                 JOptionPane.showMessageDialog(this,
@@ -592,13 +587,13 @@ public class ModificarFacturaGUI extends JFrame {
                 return;
             }
 
-            // Buscar el detalle en memoria y actualizarlo
+            // Buscar el detalle en DP y actualizarlo
             for (Pro_x_Fac detalle : detallesActuales) {
                 if (detalle.getIdProducto().equals(idProducto)) {
                     double precioUnitario = detalle.getPxfPrecio();
                     double nuevoSubtotal = nuevaCantidad * precioUnitario;
 
-                    // Actualizar objeto en memoria
+                    // Actualizar objeto en DP
                     detalle.setPxfCantidad(nuevaCantidad);
                     detalle.setPxfSubtotal(nuevoSubtotal);
 
@@ -614,7 +609,7 @@ public class ModificarFacturaGUI extends JFrame {
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "Error al incrementar la cantidad: " + e.getMessage(),
+                "No se pudo completar la operación. Intente de nuevo.",
                 "Error",
                 JOptionPane.ERROR_MESSAGE);
         }
@@ -644,13 +639,13 @@ public class ModificarFacturaGUI extends JFrame {
             String idProducto = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
             int nuevaCantidad = cantidadActual - 1;
 
-            // Buscar el detalle en memoria y actualizarlo
+            // Buscar el detalle en DP y actualizarlo
             for (Pro_x_Fac detalle : detallesActuales) {
                 if (detalle.getIdProducto().equals(idProducto)) {
                     double precioUnitario = detalle.getPxfPrecio();
                     double nuevoSubtotal = nuevaCantidad * precioUnitario;
 
-                    // Actualizar objeto en memoria
+                    // Actualizar objeto en DP
                     detalle.setPxfCantidad(nuevaCantidad);
                     detalle.setPxfSubtotal(nuevoSubtotal);
 
@@ -666,7 +661,7 @@ public class ModificarFacturaGUI extends JFrame {
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "Error al decrementar la cantidad: " + e.getMessage(),
+                "No se pudo completar la operación. Intente de nuevo.",
                 "Error",
                 JOptionPane.ERROR_MESSAGE);
         }
@@ -702,7 +697,7 @@ public class ModificarFacturaGUI extends JFrame {
 
         if (confirmacion == JOptionPane.YES_OPTION) {
             try {
-                // Remover de la lista en memoria
+                // Remover de la lista en DP
                 detallesActuales.removeIf(d -> d.getIdProducto().equals(idProducto));
 
                 // Remover de la tabla visual
@@ -717,7 +712,7 @@ public class ModificarFacturaGUI extends JFrame {
 
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this,
-                    "Error al eliminar el producto: " + e.getMessage(),
+                    "No se pudo completar la operación. Intente de nuevo.",
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
             }
@@ -881,17 +876,16 @@ public class ModificarFacturaGUI extends JFrame {
                 volverAFacturasGUI();
             } else {
                 JOptionPane.showMessageDialog(this,
-                    "No se pudo actualizar la factura",
+                    "No se pudo completar la operación. Intente de nuevo.",
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
             }
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "Error al actualizar la factura: " + e.getMessage(),
+                "No se pudo completar la operación. Intente de nuevo.",
                 "Error",
                 JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
         }
     }
     
