@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.ArrayList;
 import administracion_proyecto_integrador.gui.Inventarios.ProductoCrearGUI;
 import administracion_proyecto_integrador.gui.Inventarios.ProductoModificarPanel;
+import administracion_proyecto_integrador.gui.Menu_Principal.MenuPrincipal;
+import administracion_proyecto_integrador.gui.Compras.ComprasGUI;
+import administracion_proyecto_integrador.gui.Compras.ProveedoresGUI;
+import administracion_proyecto_integrador.gui.Facturacion.ClientesGUI;
 import administracion_proyecto_integrador.gui.Facturacion.FacturasGUI;
 
 
@@ -47,8 +51,6 @@ public class ProductosGUI extends JFrame {
         setTitle("Catálogo de Productos");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-
-        // MAXIMIZAR LA VENTANA AL INICIAR
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         // Layout principal
@@ -110,7 +112,7 @@ public class ProductosGUI extends JFrame {
         JMenu menuInicio = crearMenu("Menú Principal");
         menuInicio.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                System.out.println("Navegar a Menú Principal");
+                abrirMenuPrincipal();
             }
         });
 
@@ -122,12 +124,12 @@ public class ProductosGUI extends JFrame {
         subBodega.add(crearMenuItem("Recepciones", null));
 
         JMenu subFacturacion = crearSubMenu("Facturación ▸");
-        subFacturacion.add(crearMenuItem("Clientes", null));
+        subFacturacion.add(crearMenuItem("Clientes", e -> abrirClientesGUI()));
         subFacturacion.add(crearMenuItem("Facturas", e -> abrirFacturasGUI()));
 
         JMenu subCompras = crearSubMenu("Compras ▸");
-        subCompras.add(crearMenuItem("Proveedores", null));
-        subCompras.add(crearMenuItem("Órdenes de Compra", null));
+        subCompras.add(crearMenuItem("Proveedores", e -> navegarAProveedores()));
+        subCompras.add(crearMenuItem("Órdenes de Compra", e -> navegarACompras()));
 
         menuAdmin.add(subBodega);
         menuAdmin.add(subFacturacion);
@@ -150,21 +152,7 @@ public class ProductosGUI extends JFrame {
         
         return nav;
     }
-    
-    private void abrirFacturasGUI() {
-        new FacturasGUI().setVisible(true);
-        this.dispose();
-    }
-    
-    private void abrirProductos() {
-        this.dispose();
-        
-        SwingUtilities.invokeLater(() -> {
-            ProductosGUI productosGUI = new ProductosGUI();
-            productosGUI.setVisible(true);
-        });
-    }
-    
+
     private JMenu crearMenu(String texto) {
         JMenu menu = new JMenu(texto);
         menu.setForeground(Color.WHITE);
@@ -223,7 +211,43 @@ public class ProductosGUI extends JFrame {
 
         return item;
     }
-
+    
+    private void navegarAProveedores() {
+        SwingUtilities.invokeLater(() -> {
+            new ProveedoresGUI().setVisible(true);
+            dispose();
+        });
+    }
+    
+    private void navegarACompras() {
+        new ComprasGUI().setVisible(true);
+        this.dispose();
+    }
+    
+    private void abrirFacturasGUI() {
+        new FacturasGUI().setVisible(true);
+        this.dispose();
+    }
+    
+    private void abrirProductos() {
+        this.dispose();
+        
+        SwingUtilities.invokeLater(() -> {
+            ProductosGUI productosGUI = new ProductosGUI();
+            productosGUI.setVisible(true);
+        });
+    }
+    
+    private void abrirClientesGUI() {
+        new ClientesGUI().setVisible(true);
+        this.dispose();
+    }
+    
+    private void abrirMenuPrincipal() {
+        new MenuPrincipal().setVisible(true);
+        this.dispose();
+    }
+    
     private JComponent crearHeaderContenido() {
         JPanel top = new JPanel(new BorderLayout());
         top.setOpaque(false);
@@ -456,7 +480,7 @@ public class ProductosGUI extends JFrame {
             if (eliminado) {
                 JOptionPane.showMessageDialog(
                         this,
-                        "Producto inhabilitado correctamente.",
+                        "Registro eliminado correctamente.",
                         "Operación exitosa",
                         JOptionPane.INFORMATION_MESSAGE
                 );
@@ -542,8 +566,6 @@ public class ProductosGUI extends JFrame {
     private JPanel crearPanelCatalogo() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
-
-        // AGREGAR EL NAVBAR AL PANEL DEL CATÁLOGO
         panel.add(crearNavbar(), BorderLayout.NORTH);
 
         // Centro (contenido)
@@ -652,9 +674,5 @@ public class ProductosGUI extends JFrame {
             clicked = false;
             return button.getText();
         }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new ProductosGUI().setVisible(true));
     }
 }

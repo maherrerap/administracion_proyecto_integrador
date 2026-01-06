@@ -18,7 +18,7 @@ public class Pro_x_Fac {
     private String estadoPxf;
     
     
-    // Constructores
+    // CONSTRUCTORES
     
     // Constructor Vacio
     public Pro_x_Fac () {}
@@ -89,7 +89,7 @@ public class Pro_x_Fac {
     
     // Métodos para reglas de negocio:
     
-    // 1. Calcular el Subtotal
+    // 1. Calcular el Subtotal de la Factura.
     
     public static double calcularSubtotal (int cantidad, double precio) {
         return cantidad * precio;
@@ -161,13 +161,14 @@ public class Pro_x_Fac {
             
             return Pro_x_FacMD.registrarDetalle(nuevo);
         } else {
-            int nuevaCantidad = existente.getPxfCantidad() + cantidad;
-            return modificarPxf(idFactura, idProducto, nuevaCantidad);
+            int cantidadAnterior = existente.getPxfCantidad();
+            int nuevaCantidad = cantidadAnterior + cantidad;
+            return Pro_x_FacMD.agregarCantidadExistente(idFactura, idProducto, cantidad, nuevaCantidad);
         }
     }
     
     /**
-     * Aumentar cantidad de producto en el detalle con el boton "+"
+     * Aumentar cantidad de producto en el detalle con el botón "+"
      */
     
     public static boolean incrementarCantidad(String idFactura, String idProducto, int paso) throws Exception {
@@ -184,7 +185,7 @@ public class Pro_x_Fac {
     }
     
     /**
-     * Disminuir cantidad de producto en el detalle con el boton "-"
+     * Disminuir cantidad de producto en el detalle con el botón "-"
      */
     
     public static boolean decrementarCantidad(String idFactura, String idProducto, int paso) throws Exception {
@@ -229,7 +230,7 @@ public class Pro_x_Fac {
     }
 
     /**
-     * Actualizar solo la cantidad de un detalle (sin manejar stock)
+     * Actualizar solo la cantidad de un detalle
      * Se usa cuando el stock ya fue manejado externamente
      */
     public static boolean actualizarCantidadDetalle(String idFactura, String idProducto, int nuevaCantidad) throws Exception {

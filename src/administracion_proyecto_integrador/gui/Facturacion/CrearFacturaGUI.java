@@ -15,7 +15,7 @@ public class CrearFacturaGUI extends JFrame {
     private static final Color NAVY_BTN = new Color(14, 33, 55);
     private static final Color AZUL_LABEL = new Color(30, 86, 198);
 
-    // Componentes
+    // Componentes principales
     private JTextField txtNumFactura;
     private JTextField txtFechaEmision;
     private JComboBox<String> cmbClientes;
@@ -25,8 +25,6 @@ public class CrearFacturaGUI extends JFrame {
         setTitle("Crear Factura");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
-        
-        // MAXIMIZAR LA VENTANA AL INICIAR
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         // Panel principal
@@ -275,7 +273,6 @@ public class CrearFacturaGUI extends JFrame {
                 "No se pudo completar la operación. Intente de nuevo.", 
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
-            // En caso de error, establecer un valor por defecto
             txtNumFactura.setText("FAC0001");
         }
     }

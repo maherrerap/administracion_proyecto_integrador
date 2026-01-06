@@ -1,59 +1,54 @@
-package administracion_proyecto_integrador.gui.Facturacion;
+package administracion_proyecto_integrador.gui.Compras;
 
+import administracion_proyecto_integrador.dp.Compras.Pro_x_Oc;
 import administracion_proyecto_integrador.dp.Inventarios.Productos;
-import administracion_proyecto_integrador.dp.Facturacion.Pro_x_Fac;
-
-import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.List;
+import javax.swing.*;
 
-public class SeleccionProductoGUI extends JDialog {
+public class SeleccionProductoCompraGUI extends JDialog {
     
-    // Componentes de la cabecera
+    // Componentes principales
     private JLabel lblCantidad; 
     private JComboBox<ProductoItem> cmbProductos;
-    private JTextField txtPrecioVenta;
+    private JTextField txtValorCompra;
     private JTextField txtCantidad;
     private JButton btnAnadir;
     private JButton btnCancelar;
     
     private boolean productoAgregado = false;
-    private String idFactura;
+    private String idCompra;
     private DecimalFormat formatoDecimal = new DecimalFormat("#,##0.00");
     
-    // Clase interna para manejar items del ComboBox
     private class ProductoItem {
         private String id;
         private String nombre;
-        private double precio;
-        private int stockDisponible;
+        private double valorCompra;
         private String unidadMedida; 
         
 
-        public ProductoItem(String id, String nombre, double precio, int stockDisponible, String unidadMedida) {
+        public ProductoItem(String id, String nombre, double valorCompra, String unidadMedida) {
             this.id = id;
             this.nombre = nombre;
-            this.precio = precio;
-            this.stockDisponible = stockDisponible;
+            this.valorCompra = valorCompra;
             this.unidadMedida = unidadMedida; 
         }
 
         public String getId() { return id; }
-        public double getPrecio() { return precio; }
-        public int getStockDisponible() { return stockDisponible; }
+        public double getValorCompra() { return valorCompra; }
         public String getUnidadMedida() { return unidadMedida; } 
 
         @Override
         public String toString() {
-            return nombre + (stockDisponible > 0 ? " (Stock: " + stockDisponible + ")" : " (Sin stock)");
+            return nombre;
         }
     }
     
-    public SeleccionProductoGUI(Frame parent, String idFactura) {
+    public SeleccionProductoCompraGUI(Frame parent, String idCompra) {
         
         super(parent, "Selección de Producto", true);
-        this.idFactura = idFactura;
+        this.idCompra = idCompra;
         initComponents();
         cargarProductos();
     }
@@ -64,18 +59,15 @@ public class SeleccionProductoGUI extends JDialog {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setResizable(false);
         
-        // Panel principal
         JPanel panelPrincipal = new JPanel();
         panelPrincipal.setLayout(new BorderLayout(10, 10));
         panelPrincipal.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         panelPrincipal.setBackground(Color.WHITE);
         
-        // Título
         JLabel lblTitulo = new JLabel("Selección de Producto");
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 20));
         panelPrincipal.add(lblTitulo, BorderLayout.NORTH);
-        
-        // Panel central con formulario
+
         JPanel panelFormulario = new JPanel();
         panelFormulario.setLayout(new GridBagLayout());
         panelFormulario.setBackground(Color.WHITE);
@@ -83,7 +75,6 @@ public class SeleccionProductoGUI extends JDialog {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(10, 10, 10, 10);
         
-        // Seleccione el producto
         gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0;
         JLabel lblProducto = new JLabel("Seleccione el producto");
         lblProducto.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -96,19 +87,18 @@ public class SeleccionProductoGUI extends JDialog {
         cmbProductos.addActionListener(e -> onProductoSeleccionado());
         panelFormulario.add(cmbProductos, gbc);
         
-        // Precio de Venta de Producto
         gbc.gridy = 2; gbc.weightx = 0;
-        JLabel lblPrecio = new JLabel("Precio de Venta de Producto");
-        lblPrecio.setFont(new Font("Arial", Font.PLAIN, 14));
-        panelFormulario.add(lblPrecio, gbc);
+        JLabel lblValor = new JLabel("Valor de Compra de Producto");
+        lblValor.setFont(new Font("Arial", Font.PLAIN, 14));
+        panelFormulario.add(lblValor, gbc);
         
         gbc.gridy = 3; gbc.weightx = 1;
-        txtPrecioVenta = new JTextField("$.....");
-        txtPrecioVenta.setFont(new Font("Arial", Font.PLAIN, 14));
-        txtPrecioVenta.setPreferredSize(new Dimension(0, 35));
-        txtPrecioVenta.setEditable(false);
-        txtPrecioVenta.setBackground(new Color(240, 240, 240));
-        panelFormulario.add(txtPrecioVenta, gbc);
+        txtValorCompra = new JTextField("$.....");
+        txtValorCompra.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtValorCompra.setPreferredSize(new Dimension(0, 35));
+        txtValorCompra.setEditable(false);
+        txtValorCompra.setBackground(new Color(240, 240, 240));
+        panelFormulario.add(txtValorCompra, gbc);
         
         gbc.gridy = 4; gbc.weightx = 0;
         lblCantidad = new JLabel("Cantidad a comprar"); 
@@ -133,14 +123,9 @@ public class SeleccionProductoGUI extends JDialog {
         });
 
         panelFormulario.add(txtCantidad, gbc);
-
-        panelFormulario.add(txtCantidad, gbc);
-        
-        // Subtotal calculado
         
         panelPrincipal.add(panelFormulario, BorderLayout.CENTER);
         
-        // Panel de botones
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         panelBotones.setBackground(Color.WHITE);
         
@@ -157,7 +142,7 @@ public class SeleccionProductoGUI extends JDialog {
         btnAnadir.setBackground(new Color(44, 62, 80));
         btnAnadir.setForeground(Color.WHITE);
         btnAnadir.setFocusPainted(false);
-        btnAnadir.setEnabled(false); // Inicialmente deshabilitado
+        btnAnadir.setEnabled(false);
         btnAnadir.addActionListener(e -> agregarProducto());
         
         panelBotones.add(btnCancelar);
@@ -173,20 +158,16 @@ public class SeleccionProductoGUI extends JDialog {
             List<Productos> productos = Productos.obtenerProductos();
 
             cmbProductos.removeAllItems();
-            cmbProductos.addItem(new ProductoItem("", "Seleccione el producto", 0.0, 0, ""));
+            cmbProductos.addItem(new ProductoItem("", "Seleccione el producto", 0.0, ""));
 
             for (Productos prod : productos) {
-                // Solo agregar productos con stock disponible
-                if (prod.getProSaldoFinal() > 0) {
-                    ProductoItem item = new ProductoItem(
-                        prod.getIdProducto(),
-                        prod.getProDescripcion(),
-                        prod.getProPrecioVenta(),
-                        prod.getProSaldoFinal(),
-                        prod.getProUmVentaDescripcion() != null ? prod.getProUmVentaDescripcion() : "Unidad" 
-                    );
-                    cmbProductos.addItem(item);
-                }
+                ProductoItem item = new ProductoItem(
+                    prod.getIdProducto(),
+                    prod.getProDescripcion(),
+                    prod.getProValorCompra(),
+                    prod.getProUmCompraDescripcion() != null ? prod.getProUmCompraDescripcion() : "Unidad" 
+                );
+                cmbProductos.addItem(item);
             }
 
         } catch (Exception e) {
@@ -201,21 +182,19 @@ public class SeleccionProductoGUI extends JDialog {
         ProductoItem selected = (ProductoItem) cmbProductos.getSelectedItem();
 
         if (selected != null && !selected.getId().isEmpty()) {
-            txtPrecioVenta.setText("$ " + formatoDecimal.format(selected.getPrecio()));
+            txtValorCompra.setText("$ " + formatoDecimal.format(selected.getValorCompra()));
             txtCantidad.setText("");
             txtCantidad.setEnabled(true);
             txtCantidad.requestFocus();
 
-            // Actualizar el label con la unidad de medida
             String unidad = selected.getUnidadMedida();
             lblCantidad.setText("Cantidad a comprar (" + unidad + ")"); 
         } else {
-            txtPrecioVenta.setText("$.....");
+            txtValorCompra.setText("$.....");
             txtCantidad.setText("");
             txtCantidad.setEnabled(false);
             lblCantidad.setText("Cantidad a comprar");
         }
-
 
         validarFormulario();
     }
@@ -237,7 +216,7 @@ public class SeleccionProductoGUI extends JDialog {
         
         try {
             int cantidad = Integer.parseInt(cantidadStr);
-            btnAnadir.setEnabled(cantidad > 0 && cantidad <= selected.getStockDisponible());
+            btnAnadir.setEnabled(cantidad > 0);
         } catch (NumberFormatException e) {
             btnAnadir.setEnabled(false);
         }
@@ -245,7 +224,6 @@ public class SeleccionProductoGUI extends JDialog {
     
 
     private void agregarProducto() {
-        // Validar que se haya seleccionado un producto
         ProductoItem selected = (ProductoItem) cmbProductos.getSelectedItem();
 
         if (selected == null || selected.getId().isEmpty()) {
@@ -256,7 +234,6 @@ public class SeleccionProductoGUI extends JDialog {
             return;
         }
 
-        // Validar cantidad
         String cantidadStr = txtCantidad.getText().trim();
 
         if (cantidadStr.isEmpty()) {
@@ -288,59 +265,9 @@ public class SeleccionProductoGUI extends JDialog {
             txtCantidad.requestFocus();
             return;
         }
+
         try {
-            // 1. Obtener el stock ACTUAL del producto
-            Productos producto = Productos.obtenerProductoPorId(selected.getId());
-            if (producto == null) {
-                JOptionPane.showMessageDialog(this,
-                    "No se pudo obtener información del producto",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            int stockRealDisponible = producto.getProSaldoFinal();
-
-            // 2. Obtener cuánto ya está en el detalle
-            Pro_x_Fac existente = Pro_x_Fac.obtenerDetalle(idFactura, selected.getId());
-            int cantidadYaEnDetalle = (existente != null) ? existente.getPxfCantidad() : 0;
-
-            // 3. Calcular el stock disponible para esta operación
-            // Stock disponible = Stock actual + lo que hay en el detalle
-            int stockDisponibleParaEstaFactura = stockRealDisponible + cantidadYaEnDetalle;
-
-            // 4. Calcular el total después de agregar
-            int cantidadTotalDespuesDeAgregar = cantidadYaEnDetalle + cantidad;
-
-            // 5. Validar
-            if (cantidadTotalDespuesDeAgregar > stockDisponibleParaEstaFactura) {
-                String mensaje = cantidadYaEnDetalle > 0 
-                    ? "Ya tiene " + cantidadYaEnDetalle + " unidades en el detalle.\n" +
-                      "Stock disponible total: " + stockDisponibleParaEstaFactura + "\n" +
-                      "Cantidad total después de agregar: " + cantidadTotalDespuesDeAgregar + "\n" +
-                      "No puede agregar " + cantidad + " unidades más."
-                    : "La cantidad solicitada (" + cantidad + ") excede el stock disponible (" + 
-                      stockDisponibleParaEstaFactura + ")";
-
-                JOptionPane.showMessageDialog(this,
-                    mensaje,
-                    "Stock Insuficiente",
-                    JOptionPane.WARNING_MESSAGE);
-                txtCantidad.requestFocus();
-                txtCantidad.selectAll();
-                return;
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this,
-                "No se pudo completar la operación. Intente de nuevo.",
-                "Error",
-                JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        // Intentar agregar el producto
-        try {
-            boolean exito = Pro_x_Fac.agregarProducto(idFactura, selected.getId(), cantidad);
+            boolean exito = Pro_x_Oc.agregarProducto(idCompra, selected.getId(), cantidad);
 
             if (exito) {
                 productoAgregado = true;
@@ -355,7 +282,6 @@ public class SeleccionProductoGUI extends JDialog {
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
             }
-
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
                 "No se pudo completar la operación. Intente de nuevo.",

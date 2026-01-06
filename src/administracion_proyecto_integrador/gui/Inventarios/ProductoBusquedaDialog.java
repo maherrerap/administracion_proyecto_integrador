@@ -16,7 +16,7 @@ public class ProductoBusquedaDialog extends JDialog {
     private static final Color BORDE_CAMPO = new Color(209, 213, 219);
 
     // Componentes del formulario
-    private JTextField txtIdProducto;
+    private JComboBox<String> cmbIdProducto;
     private JTextField txtDescripcion;
     private JComboBox<Productos.Categoria> cmbCategoria;
 
@@ -83,7 +83,7 @@ public class ProductoBusquedaDialog extends JDialog {
         campos.setBackground(Color.WHITE);
 
         // Campo ID Producto
-        campos.add(crearCampoTexto("ID Producto:", txtIdProducto = new JTextField()));
+        campos.add(crearCampoCombo("ID Producto:", cmbIdProducto = new JComboBox<>()));
         campos.add(Box.createVerticalStrut(20));
 
         // Campo Categoría (ComboBox)
@@ -201,6 +201,18 @@ public class ProductoBusquedaDialog extends JDialog {
             }
 
             cmbCategoria.setModel(modeloCat);
+            
+            List<String> idsProductos = Productos.obtenerIdsProductos();
+            DefaultComboBoxModel<String> modeloIds = new DefaultComboBoxModel<>();
+
+            // Opción "Todos"
+            modeloIds.addElement("-- Todos los productos --");
+
+            for (String id : idsProductos) {
+                modeloIds.addElement(id);
+            }
+
+            cmbIdProducto.setModel(modeloIds);
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
@@ -213,7 +225,13 @@ public class ProductoBusquedaDialog extends JDialog {
     private void onBuscar() {
         try {
             // Obtener valores de los campos
-            String idProducto = txtIdProducto.getText().trim();
+            String idProducto = "";
+            String idSeleccionado = (String) cmbIdProducto.getSelectedItem();
+            
+            if (idSeleccionado != null && !idSeleccionado.startsWith("--")) {
+                idProducto = idSeleccionado.trim();
+            }
+            
             String descripcion = txtDescripcion.getText().trim();
             
             // Ahora usando Productos.Categoria
@@ -273,7 +291,7 @@ public class ProductoBusquedaDialog extends JDialog {
     }
 
     private void onLimpiar() {
-        txtIdProducto.setText("");
+        cmbIdProducto.setSelectedIndex(0);
         txtDescripcion.setText("");
         cmbCategoria.setSelectedIndex(0);
     }

@@ -396,12 +396,12 @@ public class ProductoModificarPanel extends JPanel {
                 return;
             }
             
-            // Guardar cambios en la base de datos
+            // Guardar cambios en la base de datos pasando por DP
             boolean modificado = Productos.modificarProducto(productoActual);
             
             if (modificado) {
                 JOptionPane.showMessageDialog(this,
-                    "Producto modificado exitosamente.\n\nID: " + productoActual.getIdProducto(),
+                    "Registro modificado correctamente",
                     "Éxito",
                     JOptionPane.INFORMATION_MESSAGE);
                 

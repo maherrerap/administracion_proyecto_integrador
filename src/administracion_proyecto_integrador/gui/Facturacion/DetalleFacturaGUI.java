@@ -14,7 +14,7 @@ import java.util.List;
 
 public class DetalleFacturaGUI extends JFrame {
     
-    // Componentes
+    // Componentes principales
     private JLabel lblTitulo;
     private JLabel lblNumFactura, lblCliente, lblDescripcion;
     private JLabel lblFechaEmision, lblFechaPago, lblEstado;
@@ -254,15 +254,12 @@ public class DetalleFacturaGUI extends JFrame {
 
                 txtDescripcion.setText(factura.getFacDescripcion());
 
-                // Manejar fecha de emisión
                 if (factura.getFacFechaHora() != null) {
-                    // Si ya viene como String desde la BD
                     txtFechaEmision.setText(factura.getFacFechaHora().toString());
                 } else {
                     txtFechaEmision.setText("N/A");
                 }
 
-                // Manejar fecha de pago
                 if (factura.getFacFechaPago() != null) {
                     txtFechaPago.setText(factura.getFacFechaPago().toString());
                 } else {
@@ -279,7 +276,7 @@ public class DetalleFacturaGUI extends JFrame {
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, 
-                "Error al cargar los datos de la factura: " + e.getMessage(), 
+                "No se pudo completar la operación. Intente de nuevo.", 
                 "Error", 
                 JOptionPane.ERROR_MESSAGE);
         }

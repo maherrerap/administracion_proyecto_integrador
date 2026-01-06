@@ -342,7 +342,7 @@ public class ProductoCrearGUI extends JPanel {
             
             if (guardado) {
                 JOptionPane.showMessageDialog(this,
-                    "Producto creado exitosamente.\n\nID: " + nuevoProducto.getIdProducto(),
+                    "Registro creado correctamente.",
                     "Éxito",
                     JOptionPane.INFORMATION_MESSAGE);
                 

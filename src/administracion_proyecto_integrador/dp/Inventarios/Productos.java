@@ -28,7 +28,7 @@ public class Productos {
     private String proUmCompraDescripcion;
     private String categoriaDescripcion;
     
-    // Constructores
+    // CONSTRUCTORES
     
     // Constructor Vacio
     public Productos () {}
@@ -198,7 +198,6 @@ public class Productos {
     
     /**
      * RF4.4.1: Consulta General de Productos
-     * Obtiene el listado completo de productos desde el MD
      */
     public static List<Productos> obtenerProductos() throws Exception {
         return ProductoMD.obtenerListadoProductos();
@@ -251,7 +250,7 @@ public class Productos {
     }
     
     
-    // ===================== MÉTODOS PARALA CREACIÓN DE PRODUCTOS =====================
+    // ===================== MÉTODOS PARA LA CREACIÓN DE PRODUCTOS =====================
     
 
     // GENERAR ID AUTOMÁTICO
@@ -375,9 +374,14 @@ public class Productos {
         return ProductoMD.obtenerStockDisponible(idProducto);
     }
     
+    /**
+     * Obtener lista de IDs de productos activos para ComboBox
+     */
+    public static List<String> obtenerIdsProductos() throws Exception {
+        return ProductoMD.obtenerIdsProductos();
+    }
     
-    
-    // ===================== VALIDACIONES (verificarProd) =====================
+    // ===================== VALIDACIONES =====================
 
     /** Representa un error de validación (Código + Mensaje) */
     public static class ErrorValidacion {

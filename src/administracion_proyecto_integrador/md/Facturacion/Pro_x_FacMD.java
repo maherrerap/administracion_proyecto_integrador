@@ -16,6 +16,7 @@ import java.util.List;
 
 public class Pro_x_FacMD {
     
+    // Método de Mapeo de Tabla Pro_x_Fac (Detalle de Factura)
     private static Pro_x_Fac mapearDetalle (ResultSet rs) throws SQLException {
         Pro_x_Fac detalle = new Pro_x_Fac();
         
@@ -30,7 +31,9 @@ public class Pro_x_FacMD {
     }
     
     
-    // CONSULTA DETALLES POR FACTURA
+    // --------------------------------
+    // OBTENER PRODUCTOS DE UNA FACTURA
+    // --------------------------------
     
     public static List<Pro_x_Fac> obtenerListadoDetallesFactura(String idFactura) {
         List<Pro_x_Fac> lista = new ArrayList<>();
@@ -53,7 +56,9 @@ public class Pro_x_FacMD {
         return lista;
     }
     
-    // CONSULTA ESPECIFICA DE DETALLE
+    // --------------------------------------------------
+    // CONSULTAR UN PRODUCTO EN ESPECIFICO DE UNA FACTURA
+    // --------------------------------------------------
     
     public static Pro_x_Fac obtenerDetalle(String idFactura, String idProducto) {
         String sql =
@@ -78,7 +83,9 @@ public class Pro_x_FacMD {
         return null;
     }
     
-    // OBTENER PRECIO DE VENTA DEL PRODUCTO
+    // -------------------------------------------------------------
+    // OBTENER EL PRECIO DE VENTA DEL PRODUCTO DE LA TABLA PRODUCTOS
+    // -------------------------------------------------------------
     
     public static double obtenerPrecioVentaProducto(String idProducto) {
         String sql = "SELECT pro_precio_venta FROM productos WHERE id_producto = ? AND estado_prod = 'ACT'";
@@ -101,7 +108,9 @@ public class Pro_x_FacMD {
     }
     
     
-    // OBTENER NOMBRE DEL PRODUCTO
+    // -------------------------------------------------------------------
+    // OBTENER EL NOMBRE DEL PRODUCTO PARA FACILITAR EL REGISTRO DEL MISMO
+    // -------------------------------------------------------------------
 
     public static String obtenerNombreProducto(String idProducto) {
         String sql = "SELECT pro_descripcion FROM productos WHERE id_producto = ?";
@@ -124,7 +133,9 @@ public class Pro_x_FacMD {
     }
     
     
-    // OBTENER EL PRECIO DEL DETALLE
+    // ----------------------------------------------
+    // OBTENER EL PRECIO DEL PRODUCTO DE UNA FACTURA
+    // ----------------------------------------------
     
     public static double obtenerPrecioDetalle(String idFactura, String idProducto) {
         String sql =
@@ -151,7 +162,9 @@ public class Pro_x_FacMD {
         return 0.0;
     }
     
-    // ACTUALIZAR LA CANTIDAD Y EL SUBTOTAL
+    // --------------------------------------
+    // ACTUALIZACIÓN DE DETALLE DE LA FACTURA
+    // --------------------------------------
     
     public static boolean actualizarCantidadYSubtotal(String idFactura, String idProducto, int nuevaCantidad, double nuevoSubtotal) {
         // Primero obtener la cantidad anterior para calcular la diferencia
@@ -219,7 +232,81 @@ public class Pro_x_FacMD {
         }
     }
     
-    // VERIFICAR EXISTENCIA
+    // ----------------------------------------
+    // AGREGAR CANTIDAD DEL PRODUCTO AL DETALLE
+    // ----------------------------------------
+    
+    public static boolean agregarCantidadExistente(String idFactura, String idProducto, int cantidadAAgregar, int nuevaCantidadTotal) {
+        String sql =
+            "UPDATE pro_x_fac SET " +
+            "pxf_cantidad = ?, " +
+            "pxf_subtotal = pxf_precio * ? " +
+            "WHERE id_factura = ? AND id_producto = ? AND estado_pxf = 'APR'";
+
+        Connection conn = null;
+        try {
+            conn = ConexionPostgreSQL.getConnection();
+            conn.setAutoCommit(false);
+
+            // 1. Actualizar el detalle con la nueva cantidad total
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, nuevaCantidadTotal);
+                ps.setInt(2, nuevaCantidadTotal);
+                ps.setString(3, idFactura);
+                ps.setString(4, idProducto);
+
+                int result = ps.executeUpdate();
+
+                if (result > 0) {
+                    // 2. Descontar del stock SOLO la cantidad que se está agregando ahora
+                    boolean stockActualizado = administracion_proyecto_integrador.md.Inventarios.ProductoMD
+                            .actualizarStockPorVenta(idProducto, cantidadAAgregar);
+
+                    if (stockActualizado) {
+                        // 3. Actualizar totales de la cabecera
+                        boolean cabeceraActualizada = actualizarTotalesCabecera(idFactura);
+
+                        if (cabeceraActualizada) {
+                            conn.commit();
+                            return true;
+                        } else {
+                            conn.rollback();
+                            System.out.println("No se pudo completar la operación. Intente de nuevo.");
+                            return false;
+                        }
+                    } else {
+                        conn.rollback();
+                        System.out.println("No se pudo completar la operación. Intente de nuevo.");
+                        return false;
+                    }
+                }
+
+                conn.rollback();
+                return false;
+            }
+
+        } catch (SQLException e) {
+            try {
+                if (conn != null) conn.rollback();
+            } catch (SQLException ex) {
+                System.out.println("No se pudo completar la operación. Intente de nuevo.");
+            }
+            return false;
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                System.out.println("No se pudo completar la operación. Intente de nuevo.");
+            }
+        }
+    }
+    
+    // -------------------------------------------------
+    // VERIFICAR LA EXISTENCIA DEL DETALLE DE LA FACTURA
+    // -------------------------------------------------
     
     public static boolean verificarExistencia(String idFactura, String idProducto) {
         String sql = "SELECT 1 FROM pro_x_fac WHERE id_factura =  ? AND id_producto = ? AND estado_pxf = 'APR'";
@@ -239,7 +326,9 @@ public class Pro_x_FacMD {
     }
     
     
-    // OBTENER CANTIDAD ACTUAL DE PRODUCTO
+    // -----------------------------------------------------
+    // OBTENER LA CANTIDAD ACTUAL DEL PRODUCTO EN LA FACTURA
+    // -----------------------------------------------------
     
     public static int obtenerCantidadActual(String idFactura, String idProducto) {
         String sql = "SELECT pxf_cantidad FROM pro_x_fac WHERE id_factura = ? AND id_producto = ? AND estado_pxf = 'APR'";
@@ -261,12 +350,10 @@ public class Pro_x_FacMD {
         return 0;
     }
     
-    // CREAR DETALLE
-    // PARA ACTUALIZAR LA CABECERA
+    // --------------------------------------------------------------------------
+    // ACTUALIZACIÓN DE CABECERA EN CASO DE INSERCION / MODIFICACION DE PRODUCTOS
+    // --------------------------------------------------------------------------
     
-    // CALCULAR TOTALES DE LA FACTURA A PARTIR DE LOS DETALLES
-    
-
     private static boolean actualizarTotalesCabecera(String idFactura) {
         // Primero calculamos el subtotal sumando todos los detalles
         String sqlCalcular = "SELECT COALESCE(SUM(pxf_subtotal), 0) as total_subtotal " +
@@ -313,6 +400,10 @@ public class Pro_x_FacMD {
 
         return false;
     }
+    
+    // -----------------------------
+    // REGISTRAR PRODUCTO EN DETALLE
+    // -----------------------------
     
     public static boolean registrarDetalle(Pro_x_Fac detalle) {
         String sql = "INSERT INTO pro_x_fac (id_factura, id_producto, "
@@ -386,7 +477,10 @@ public class Pro_x_FacMD {
         }
     }
     
+
+    // --------------------------------------------------------------------------
     // ACTUALIZAR LA CANTIDAD CON LOS BOTONES DE '+' O '-' Y RECALCULAR SUBTOTAL
+    // --------------------------------------------------------------------------
     
     public boolean actualizarCantidad(String idFactura, String idProducto, int nuevaCantidad, double precioUnitario) {
         String sql = "UPDATE pro_x_fac SET pxf_cantidad = ?, pxf_subtotal = ? "
@@ -480,9 +574,11 @@ public class Pro_x_FacMD {
         }
     }
     
-    /**
-     * Actualizar solo la cantidad del detalle sin tocar el stock
-     */
+
+    // ----------------------------------------------------------
+    // ACTUALIZAR SOLO LA CANTIDAD DEL DETALLE SIN TOCAR EL STOCK
+    // ----------------------------------------------------------
+    
     public static boolean actualizarCantidadDetalle(String idFactura, String idProducto, int nuevaCantidad) {
         String sql = "UPDATE pro_x_fac SET " +
                      "pxf_cantidad = ?, " +

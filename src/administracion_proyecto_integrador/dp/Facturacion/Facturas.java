@@ -129,8 +129,7 @@ public class Facturas {
     }
     
     /**
-     * 
-     * METODO PARA GUI PARA OBTENER LOS DATOS DE UNA FACTURA EN ESPECIFICO (CABECERA)
+     * Obtener una factura específica por su ID
      */
 
     public static Facturas obtenerFacturaPorId(String idFactura) throws Exception {
@@ -140,8 +139,6 @@ public class Facturas {
     
     /**
      * RF5.1: Grabar Factura
-     * Recibe un objeto Factura con los datos cargados desde la GUI
-     * y lo envia a la capa MD para que se inserte en la BD
      */
     
     public static boolean grabarFactura(Facturas factura) {
@@ -180,24 +177,21 @@ public class Facturas {
     }
     
     
-    /**
-     * METODO PARA COMBOBOX DE FACTURACION
-     */
-    
+    // ===================== MÉTODOS PARA LA CREACIÓN DE FACTURAS =====================
+
+    // GENERAR ID AUTOMÁTICO    
+    public static String obtenerSiguienteIdFactura() {
+        return FacturasMD.generarSiguienteIdFactura();
+    }
     
     // METODO PARA OBTENER EL LISTADO DE LOS CLIENTES ACTIVOS.
     public static List<Clientes> obtenerClientesActivos () throws Exception {
         return Clientes.obtenerClientes(); 
     }
     
-    /**
-     * Obtiene el siguiente ID de factura disponible
-     */
-    public static String obtenerSiguienteIdFactura() {
-        return FacturasMD.generarSiguienteIdFactura();
-    }
+
     
-    // VALIDACIONES
+    // ===================== VALIDACIONES =====================
 
     /** Representa un error de validación (Código + Mensaje) */
     public static class ErrorValidacion {

@@ -1,33 +1,34 @@
-package administracion_proyecto_integrador.gui.Facturacion;
+package administracion_proyecto_integrador.gui.Compras;
 
-import javax.swing.*;
+import administracion_proyecto_integrador.dp.Compras.Compras;
+import administracion_proyecto_integrador.dp.Compras.Proveedores;
 import java.awt.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import administracion_proyecto_integrador.dp.Facturacion.Facturas;
-import administracion_proyecto_integrador.dp.Facturacion.Clientes;
+import javax.swing.*;
 
-public class ConsultaFacturasGUI extends JDialog {
+public class ConsultaComprasGUI extends JDialog {
     
     // Colores Estandar en la Aplicación
     private static final Color NAVY_BTN = new Color(14, 33, 55);
     private static final Color AZUL_LABEL = new Color(30, 86, 198);
     
     // Componentes principales
-    private JComboBox<FacturaItem> cmbIdFactura;
-    private JComboBox<ClienteItem> cmbCliente;
-    private JTextField txtDescripcion;
+    private JComboBox<CompraItem> cmbIdCompra;
+    private JComboBox<ProveedorItem> cmbProveedor;
+    private JTextField txtFechaEmision;
     
     private JButton btnBuscar;
     private JButton btnLimpiar;
     private JButton btnCancelar;
     
-    private FacturasGUI parentGUI;
+    private ComprasGUI parentGUI;
     
-    // Clase interna para items de factura
-    private static class FacturaItem {
+    private static class CompraItem {
         private String id;
         
-        public FacturaItem(String id) {
+        public CompraItem(String id) {
             this.id = id;
         }
         
@@ -35,16 +36,15 @@ public class ConsultaFacturasGUI extends JDialog {
         
         @Override
         public String toString() {
-            return id;
+            return id.isEmpty() ? "-- Todas las órdenes --" : id;
         }
     }
     
-    // Clase interna para items de cliente
-    private static class ClienteItem {
+    private static class ProveedorItem {
         private String id;
         private String nombre;
         
-        public ClienteItem(String id, String nombre) {
+        public ProveedorItem(String id, String nombre) {
             this.id = id;
             this.nombre = nombre;
         }
@@ -58,15 +58,15 @@ public class ConsultaFacturasGUI extends JDialog {
         }
     }
     
-    public ConsultaFacturasGUI(FacturasGUI parent) {
-        super(parent, "Consulta de Facturas por Parámetros", true);
+    public ConsultaComprasGUI(ComprasGUI parent) {
+        super(parent, "Consulta de Órdenes de Compra por Parámetros", true);
         this.parentGUI = parent;
         initComponents();
         cargarDatos();
     }
     
     private void initComponents() {
-        setSize(600, 400);
+        setSize(600, 450);
         setLocationRelativeTo(parentGUI);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -75,15 +75,12 @@ public class ConsultaFacturasGUI extends JDialog {
         panelPrincipal.setBackground(Color.WHITE);
         panelPrincipal.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
         
-        // Panel del título
         JPanel panelTitulo = crearPanelTitulo();
         panelPrincipal.add(panelTitulo, BorderLayout.NORTH);
         
-        // Panel de campos
         JPanel panelCampos = crearPanelCampos();
         panelPrincipal.add(panelCampos, BorderLayout.CENTER);
         
-        // Panel de botones
         JPanel panelBotones = crearPanelBotones();
         panelPrincipal.add(panelBotones, BorderLayout.SOUTH);
         
@@ -99,7 +96,7 @@ public class ConsultaFacturasGUI extends JDialog {
         barra.setBackground(AZUL_LABEL);
         barra.setPreferredSize(new Dimension(5, 30));
         
-        JLabel lblTitulo = new JLabel(" Búsqueda de Facturas");
+        JLabel lblTitulo = new JLabel(" Búsqueda de Órdenes de Compra");
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblTitulo.setForeground(new Color(20, 20, 20));
         
@@ -116,57 +113,76 @@ public class ConsultaFacturasGUI extends JDialog {
             BorderFactory.createLineBorder(new Color(230, 230, 230)),
             BorderFactory.createEmptyBorder(20, 20, 20, 20)
         ));
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(10, 10, 10, 10);
-        
-        // Fila 1: ID Factura
+
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0.3;
-        panel.add(crearLabel("ID Factura:"), gbc);
-        
+        panel.add(crearLabel("ID Orden Compra:"), gbc);
+
         gbc.gridx = 1;
         gbc.weightx = 0.7;
-        cmbIdFactura = new JComboBox<>();
-        cmbIdFactura.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cmbIdFactura.setBorder(BorderFactory.createCompoundBorder(
+        cmbIdCompra = new JComboBox<>();
+        cmbIdCompra.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        cmbIdCompra.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(200, 200, 200)),
             BorderFactory.createEmptyBorder(5, 8, 5, 8)
         ));
-        cmbIdFactura.setBackground(Color.WHITE);
-        panel.add(cmbIdFactura, gbc);
-        
-        // Fila 2: Cliente
+        cmbIdCompra.setBackground(Color.WHITE);
+        panel.add(cmbIdCompra, gbc);
+
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.weightx = 0.3;
-        panel.add(crearLabel("Cliente:"), gbc);
-        
+        panel.add(crearLabel("Proveedor:"), gbc);
+
         gbc.gridx = 1;
         gbc.weightx = 0.7;
-        cmbCliente = new JComboBox<>();
-        cmbCliente.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cmbCliente.setBorder(BorderFactory.createCompoundBorder(
+        cmbProveedor = new JComboBox<>();
+        cmbProveedor.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        cmbProveedor.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(200, 200, 200)),
             BorderFactory.createEmptyBorder(5, 8, 5, 8)
         ));
-        cmbCliente.setBackground(Color.WHITE);
-        panel.add(cmbCliente, gbc);
-        
-        // Fila 3: Descripción
+        cmbProveedor.setBackground(Color.WHITE);
+        panel.add(cmbProveedor, gbc);
+
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.weightx = 0.3;
-        panel.add(crearLabel("Descripción:"), gbc);
-        
+        panel.add(crearLabel("Fecha de Emisión:"), gbc);
+
         gbc.gridx = 1;
+        gbc.gridy = 2;
         gbc.weightx = 0.7;
-        txtDescripcion = crearTextField();
-        panel.add(txtDescripcion, gbc);
+        txtFechaEmision = crearTextField();
+        panel.add(txtFechaEmision, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        gbc.weightx = 0.7;
+
+        JLabel lblFormatoFecha = new JLabel("Formato: DD/MM/YYYY");
+        lblFormatoFecha.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lblFormatoFecha.setForeground(new Color(120, 120, 120));
+
+        panel.add(lblFormatoFecha, gbc);
         
         return panel;
+    }
+    
+    private JTextField crearTextField() {
+        JTextField textField = new JTextField();
+        textField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        textField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 200)),
+            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
+        textField.setBackground(Color.WHITE);
+        return textField;
     }
     
     private JPanel crearPanelBotones() {
@@ -181,6 +197,7 @@ public class ConsultaFacturasGUI extends JDialog {
         btnBuscar.addActionListener(e -> realizarBusqueda());
         btnLimpiar.addActionListener(e -> limpiarCampos());
         btnCancelar.addActionListener(e -> dispose());
+        
         panel.add(btnBuscar);
         panel.add(btnLimpiar);
         panel.add(btnCancelar);
@@ -193,17 +210,6 @@ public class ConsultaFacturasGUI extends JDialog {
         label.setFont(new Font("Segoe UI", Font.BOLD, 13));
         label.setForeground(new Color(50, 50, 50));
         return label;
-    }
-    
-    private JTextField crearTextField() {
-        JTextField textField = new JTextField();
-        textField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        textField.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(200, 200, 200)),
-            BorderFactory.createEmptyBorder(5, 8, 5, 8)
-        ));
-        textField.setBackground(Color.WHITE);
-        return textField;
     }
     
     private JButton crearBoton(String texto, Color color) {
@@ -220,22 +226,20 @@ public class ConsultaFacturasGUI extends JDialog {
     private void cargarDatos() {
         try {
             
-            // Cargar facturas para el ComboBox
-            cmbIdFactura.removeAllItems();
-            cmbIdFactura.addItem(new FacturaItem("")); 
+            cmbIdCompra.removeAllItems();
+            cmbIdCompra.addItem(new CompraItem(""));
             
-            List<Facturas> facturas = Facturas.obtenerFacturas();
-            for (Facturas factura : facturas) {
-                cmbIdFactura.addItem(new FacturaItem(factura.getIdFactura()));
+            List<Compras> compras = Compras.obtenerCompras();
+            for (Compras compra : compras) {
+                cmbIdCompra.addItem(new CompraItem(compra.getIdCompra()));
             }
+
+            cmbProveedor.removeAllItems();
+            cmbProveedor.addItem(new ProveedorItem("", "-- Todos los proveedores --"));
             
-            // Cargar clientes para el ComboBox
-            cmbCliente.removeAllItems();
-            cmbCliente.addItem(new ClienteItem("", "-- Todos los clientes --")); 
-            
-            List<Clientes> clientes = Clientes.obtenerClientesActivos();
-            for (Clientes cliente : clientes) {
-                cmbCliente.addItem(new ClienteItem(cliente.getIdCliente(), cliente.getCliNombre()));
+            List<Proveedores> proveedores = Proveedores.obtenerProveedoresActivos();
+            for (Proveedores proveedor : proveedores) {
+                cmbProveedor.addItem(new ProveedorItem(proveedor.getIdProveedor(), proveedor.getPrvNombre()));
             }
             
         } catch (Exception e) {
@@ -248,39 +252,49 @@ public class ConsultaFacturasGUI extends JDialog {
     
     private void realizarBusqueda() {
         try {
-            // Obtener valores de los campos
-            FacturaItem facturaSeleccionada = (FacturaItem) cmbIdFactura.getSelectedItem();
-            String idFactura = (facturaSeleccionada != null && !facturaSeleccionada.getId().isEmpty()) 
-                               ? facturaSeleccionada.getId() 
+            CompraItem compraSeleccionada = (CompraItem) cmbIdCompra.getSelectedItem();
+            String idCompra = (compraSeleccionada != null && !compraSeleccionada.getId().isEmpty()) 
+                               ? compraSeleccionada.getId() 
                                : null;
-            
-            ClienteItem clienteSeleccionado = (ClienteItem) cmbCliente.getSelectedItem();
-            String idCliente = (clienteSeleccionado != null && !clienteSeleccionado.getId().isEmpty()) 
-                               ? clienteSeleccionado.getId() 
+
+            ProveedorItem proveedorSeleccionado = (ProveedorItem) cmbProveedor.getSelectedItem();
+            String idProveedor = (proveedorSeleccionado != null && !proveedorSeleccionado.getId().isEmpty()) 
+                               ? proveedorSeleccionado.getId() 
                                : null;
-            
-            String descripcion = txtDescripcion.getText().trim();
-            if (descripcion.isEmpty()) {
-                descripcion = null;
+
+            String fechaEmision = null;
+            String fechaTexto = txtFechaEmision.getText().trim();
+            if (!fechaTexto.isEmpty()) {
+                if (!fechaTexto.matches("^\\d{2}/\\d{2}/\\d{4}$")) {
+                    JOptionPane.showMessageDialog(this,
+                        "El formato de fecha debe ser DD/MM/YYYY",
+                        "Formato incorrecto",
+                        JOptionPane.WARNING_MESSAGE);
+                    txtFechaEmision.requestFocus();
+                    return;
+                }
+
+                DateTimeFormatter formatoEntrada = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                DateTimeFormatter formatoSalida = DateTimeFormatter.ISO_LOCAL_DATE;
+
+                LocalDate fecha = LocalDate.parse(fechaTexto, formatoEntrada);
+                fechaEmision = fecha.format(formatoSalida);
             }
-            
-            // Validar que al menos un campo esté lleno
-            if (idFactura == null && idCliente == null && descripcion == null) {
+
+            if (idCompra == null && idProveedor == null && fechaEmision == null) {
                 JOptionPane.showMessageDialog(this,
                     "Debe ingresar al menos un criterio de búsqueda",
                     "Advertencia",
                     JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            
-            // Realizar la búsqueda
-            List<Facturas> resultados = Facturas.obtenerFacturasPorParametro(
-                idFactura, 
-                idCliente, 
-                descripcion
+
+            List<Compras> resultados = Compras.obtenerOrdenCompraPorParametro(
+                idCompra, 
+                idProveedor, 
+                fechaEmision
             );
-            
-            // Verificar si hay resultados
+
             if (resultados.isEmpty()) {
                 JOptionPane.showMessageDialog(this,
                     "No se encontraron resultados para la búsqueda",
@@ -288,18 +302,15 @@ public class ConsultaFacturasGUI extends JDialog {
                     JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-            
-            // Actualizar la tabla en FacturasGUI
+
             parentGUI.actualizarTablaConResultados(resultados);
-            
-            // Cerrar el diálogo
             dispose();
-            
+
             JOptionPane.showMessageDialog(parentGUI,
-                "Resultados encontrados.",
+                "Se encontraron " + resultados.size() + " resultado(s).",
                 "Búsqueda exitosa",
                 JOptionPane.INFORMATION_MESSAGE);
-            
+
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
                 "No se pudo completar la operación. Intente de nuevo.",
@@ -308,10 +319,10 @@ public class ConsultaFacturasGUI extends JDialog {
             e.printStackTrace();
         }
     }
-    
+
     private void limpiarCampos() {
-        cmbIdFactura.setSelectedIndex(0);
-        cmbCliente.setSelectedIndex(0);
-        txtDescripcion.setText("");
+        cmbIdCompra.setSelectedIndex(0);
+        cmbProveedor.setSelectedIndex(0);
+        txtFechaEmision.setText("");
     }
 }

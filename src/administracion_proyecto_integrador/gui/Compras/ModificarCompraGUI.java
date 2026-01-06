@@ -1,9 +1,9 @@
-package administracion_proyecto_integrador.gui.Facturacion;
+package administracion_proyecto_integrador.gui.Compras;
 
-import administracion_proyecto_integrador.dp.Facturacion.Facturas;
-import administracion_proyecto_integrador.dp.Facturacion.Pro_x_Fac;
-import administracion_proyecto_integrador.dp.Facturacion.Clientes;
-import administracion_proyecto_integrador.dp.Inventarios.Productos;
+import administracion_proyecto_integrador.dp.Compras.Compras;
+import administracion_proyecto_integrador.dp.Compras.Pro_x_Oc;
+import administracion_proyecto_integrador.dp.Compras.Proveedores;
+
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -15,82 +15,73 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import com.toedter.calendar.JDateChooser;
 
-public class ModificarFacturaGUI extends JFrame {
+public class ModificarCompraGUI extends JFrame {
     
-    // Componentes de la cabecera
-    private JTextField txtIdFactura;
-    private JComboBox<ClienteItem> cmbCliente;
-    private JTextField txtDescripcion;
+    // Componentes principales
+    private JTextField txtIdCompra;
+    private JComboBox<ProveedorItem> cmbProveedor;
     private JTextField txtFechaEmision;
-    private JDateChooser dcFechaPago;
+    private JDateChooser dcFechaVenc;
     private JTextField txtEstado;
-    
-    // Componentes del detalle
+
     private JTable tablaDetalles;
     private DefaultTableModel modeloTabla;
-    
-    // Componentes del resumen
+
     private JLabel lblSubtotal;
     private JLabel lblIva;
     private JLabel lblTotal;
-    
-    // Botones
+
     private JButton btnActualizar;
     private JButton btnSalir;
-    
-    // Variables de control
-    private String idFacturaActual;
-    private List<Pro_x_Fac> detallesActuales;
-    private String idClienteOriginal;
-    
-    // Clase interna para el ComboBox de clientes
-    private static class ClienteItem {
+
+    private String idCompraActual;
+    private List<Pro_x_Oc> detallesActuales;
+    private String idProveedorOriginal;
+
+    private static class ProveedorItem {
         private String id;
         private String nombre;
-        
-        public ClienteItem(String id, String nombre) {
+
+        public ProveedorItem(String id, String nombre) {
             this.id = id;
             this.nombre = nombre;
         }
-        
+
         public String getId() { return id; }
         public String getNombre() { return nombre; }
-        
+
         @Override
         public String toString() {
             return nombre;
         }
     }
-    
-    public ModificarFacturaGUI(String idFactura) {
-        this.idFacturaActual = idFactura;
+
+    public ModificarCompraGUI(String idCompra) {
+        this.idCompraActual = idCompra;
         initComponents();
-        cargarDatosFactura();
+        cargarDatosCompra();
     }
-    
+
     private void initComponents() {
-        setTitle("Administración de Facturación (Modificar Factura)");
+        setTitle("Administración de Compras (Modificar Orden de Compra)");
         setSize(1200, 750);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
+
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         setLayout(new BorderLayout());
 
-        // Panel principal con fondo blanco
         JPanel panelPrincipal = new JPanel(new BorderLayout(0, 0));
         panelPrincipal.setBackground(Color.WHITE);
         panelPrincipal.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
 
-        // Panel superior - Cabecera
         JPanel panelCabecera = crearPanelCabecera();
         panelPrincipal.add(panelCabecera, BorderLayout.NORTH);
 
-        // Panel central - Detalles
         JPanel panelDetalles = crearPanelDetalles();
         panelPrincipal.add(panelDetalles, BorderLayout.CENTER);
 
-        // Panel inferior - Resumen y Botón Salir
         JPanel panelInferior = new JPanel(new BorderLayout());
         panelInferior.setBackground(Color.WHITE);
 
@@ -104,165 +95,150 @@ public class ModificarFacturaGUI extends JFrame {
 
         add(panelPrincipal, BorderLayout.CENTER);
     }
-    
+
     private JPanel crearPanelCabecera() {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
-        
-        // Panel título y botón
+
         JPanel panelTop = new JPanel(new BorderLayout());
         panelTop.setBackground(Color.WHITE);
-        
-        // Título
-        JLabel lblTitulo = new JLabel("Modificar Factura");
+
+        JLabel lblTitulo = new JLabel("Modificar Orden de Compra");
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
         panelTop.add(lblTitulo, BorderLayout.WEST);
-        
-        // Botón Actualizar
-        btnActualizar = new JButton("Actualizar Factura");
+
+        btnActualizar = new JButton("Actualizar Orden de Compra");
         btnActualizar.setBackground(new Color(15, 23, 42));
         btnActualizar.setForeground(Color.WHITE);
         btnActualizar.setFocusPainted(false);
         btnActualizar.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnActualizar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         btnActualizar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnActualizar.addActionListener(e -> actualizarFactura());
+        btnActualizar.addActionListener(e -> actualizarCompra());
         panelTop.add(btnActualizar, BorderLayout.EAST);
-        
+
         panel.add(panelTop, BorderLayout.NORTH);
-        
-        // Panel de campos en grid
+
         JPanel panelCampos = new JPanel(new GridBagLayout());
         panelCampos.setBackground(Color.WHITE);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(8, 5, 8, 15);
-        
-        // Fila 1
+
         gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0;
-        panelCampos.add(crearLabel("N.° Factura:"), gbc);
-        
+        panelCampos.add(crearLabel("N.° Orden de Compra:"), gbc);
+
         gbc.gridx = 1; gbc.weightx = 0.5;
-        txtIdFactura = crearTextField(false);
-        panelCampos.add(txtIdFactura, gbc);
-        
+        txtIdCompra = crearTextField(false);
+        panelCampos.add(txtIdCompra, gbc);
+
         gbc.gridx = 2; gbc.weightx = 0;
-        panelCampos.add(crearLabel("Cliente:"), gbc);
-        
+        panelCampos.add(crearLabel("Proveedor:"), gbc);
+
         gbc.gridx = 3; gbc.weightx = 0.5;
-        cmbCliente = new JComboBox<>();
-        cmbCliente.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cmbCliente.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(200, 200, 200)),
-            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        cmbProveedor = new JComboBox<>();
+        cmbProveedor.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        cmbProveedor.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)
         ));
-        cmbCliente.setBackground(Color.WHITE);
-        cargarClientes();
-        panelCampos.add(cmbCliente, gbc);
-        
+        cmbProveedor.setBackground(Color.WHITE);
+        cargarProveedores();
+        panelCampos.add(cmbProveedor, gbc);
+
         gbc.gridx = 4; gbc.weightx = 0;
         panelCampos.add(crearLabel("Fecha de Emisión:"), gbc);
-        
+
         gbc.gridx = 5; gbc.weightx = 0.3;
         txtFechaEmision = crearTextField(false);
         panelCampos.add(txtFechaEmision, gbc);
-        
+
         gbc.gridx = 6; gbc.weightx = 0;
         panelCampos.add(crearLabel("Estado:"), gbc);
-        
+
         gbc.gridx = 7; gbc.weightx = 0.2;
         txtEstado = crearTextField(false);
         panelCampos.add(txtEstado, gbc);
-        
-        // Fila 2
+
         gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0;
-        panelCampos.add(crearLabel("Descripción:"), gbc);
-        
+        panelCampos.add(crearLabel("Fecha de Vencimiento:"), gbc);
+
         gbc.gridx = 1; gbc.weightx = 0.5;
-        txtDescripcion = crearTextField(true);
-        panelCampos.add(txtDescripcion, gbc);
-        
-        gbc.gridx = 4; gbc.weightx = 0;
-        panelCampos.add(crearLabel("Fecha de Pago:"), gbc);
-        
-        gbc.gridx = 5; gbc.weightx = 0.3;
-        dcFechaPago = new JDateChooser();
-        dcFechaPago.setDateFormatString("dd/MM/yyyy");
-        dcFechaPago.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        dcFechaPago.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)));
-        panelCampos.add(dcFechaPago, gbc);
-        
+        dcFechaVenc = new JDateChooser();
+        dcFechaVenc.setDateFormatString("dd/MM/yyyy");
+        dcFechaVenc.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        dcFechaVenc.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)));
+        panelCampos.add(dcFechaVenc, gbc);
+
         panel.add(panelCampos, BorderLayout.CENTER);
-        
+
         return panel;
     }
-    
-    private void cargarClientes() {
+
+    private void cargarProveedores() {
         try {
-            List<Clientes> clientes = Clientes.obtenerClientesActivos();
-            cmbCliente.removeAllItems();
-            
-            for (Clientes cliente : clientes) {
-                cmbCliente.addItem(new ClienteItem(cliente.getIdCliente(), cliente.getCliNombre()));
+            List<Proveedores> proveedores = Proveedores.obtenerProveedoresActivos();
+            cmbProveedor.removeAllItems();
+
+            for (Proveedores proveedor : proveedores) {
+                cmbProveedor.addItem(new ProveedorItem(proveedor.getIdProveedor(), proveedor.getPrvNombre()));
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "No se pudo completar la operación. Intente de nuevo.",
-                "Error",
-                JOptionPane.ERROR_MESSAGE);
+                    "No se pudo completar la operación. Intente de nuevo.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
-    
+
     private JLabel crearLabel(String texto) {
         JLabel label = new JLabel(texto);
         label.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         label.setForeground(new Color(50, 50, 50));
         return label;
     }
-    
+
     private JTextField crearTextField(boolean editable) {
         JTextField textField = new JTextField();
         textField.setEditable(editable);
         textField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         textField.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(200, 200, 200)),
-            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+                BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)
         ));
-        
+
         if (!editable) {
             textField.setBackground(new Color(249, 249, 249));
             textField.setForeground(new Color(150, 150, 150));
         } else {
             textField.setBackground(Color.WHITE);
         }
-        
+
         return textField;
     }
-    
+
     private JPanel crearPanelDetalles() {
         JPanel panel = new JPanel(new BorderLayout(0, 15));
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createEmptyBorder(15, 0, 15, 0));
-        
-        // Título
+
         JLabel lblTitulo = new JLabel("Detalle de Productos");
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblTitulo.setForeground(new Color(37, 99, 235));
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
         panel.add(lblTitulo, BorderLayout.NORTH);
-        
-        // Crear tabla
+
         String[] columnas = {"Código", "Nombre Producto", "Cantidad", "Precio Unitario", "Subtotal", "+", "-", "Eliminar"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column >= 5; // Solo los botones son "editables"
+                return column >= 5; 
             }
         };
-        
+
         tablaDetalles = new JTable(modeloTabla);
         tablaDetalles.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tablaDetalles.setRowHeight(40);
@@ -270,23 +246,20 @@ public class ModificarFacturaGUI extends JFrame {
         tablaDetalles.setGridColor(new Color(230, 230, 230));
         tablaDetalles.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaDetalles.setSelectionBackground(new Color(240, 245, 255));
-        
-        // Estilo del header
+
         JTableHeader header = tablaDetalles.getTableHeader();
         header.setFont(new Font("Segoe UI", Font.BOLD, 13));
         header.setBackground(new Color(248, 248, 248));
         header.setForeground(new Color(80, 80, 80));
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(230, 230, 230)));
         header.setPreferredSize(new Dimension(header.getWidth(), 45));
-        
-        // Renderizador para centrar las columnas de botones
+
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        
-        // Renderizador para columnas de precio
+
         DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
         rightRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        
+
         tablaDetalles.getColumnModel().getColumn(0).setPreferredWidth(80);
         tablaDetalles.getColumnModel().getColumn(1).setPreferredWidth(250);
         tablaDetalles.getColumnModel().getColumn(2).setPreferredWidth(80);
@@ -301,90 +274,84 @@ public class ModificarFacturaGUI extends JFrame {
         tablaDetalles.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
         tablaDetalles.getColumnModel().getColumn(7).setPreferredWidth(100);
         tablaDetalles.getColumnModel().getColumn(7).setCellRenderer(centerRenderer);
-        
-        // Agregar renderizador de botones
+
         tablaDetalles.getColumnModel().getColumn(5).setCellRenderer(new ButtonRenderer("+", new Color(59, 130, 246)));
         tablaDetalles.getColumnModel().getColumn(6).setCellRenderer(new ButtonRenderer("-", new Color(59, 130, 246)));
         tablaDetalles.getColumnModel().getColumn(7).setCellRenderer(new ButtonRenderer("Eliminar", new Color(239, 68, 68)));
-        
+
         tablaDetalles.getColumnModel().getColumn(5).setCellEditor(new ButtonEditor(new JCheckBox(), this, "+"));
         tablaDetalles.getColumnModel().getColumn(6).setCellEditor(new ButtonEditor(new JCheckBox(), this, "-"));
         tablaDetalles.getColumnModel().getColumn(7).setCellEditor(new ButtonEditor(new JCheckBox(), this, "Eliminar"));
-        
+
         JScrollPane scrollPane = new JScrollPane(tablaDetalles);
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230)));
         scrollPane.getViewport().setBackground(Color.WHITE);
         panel.add(scrollPane, BorderLayout.CENTER);
-        
+
         return panel;
     }
-    
+
     private JPanel crearPanelResumen() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
-        
-        // Título
+
         JLabel lblTitulo = new JLabel("Resumen");
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblTitulo.setForeground(new Color(37, 99, 235));
         panel.add(lblTitulo, BorderLayout.NORTH);
-        
-        // Panel de valores
+
         JPanel panelValores = new JPanel();
         panelValores.setLayout(new BoxLayout(panelValores, BoxLayout.Y_AXIS));
         panelValores.setBackground(new Color(245, 247, 250));
         panelValores.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(230, 230, 230)),
-            BorderFactory.createEmptyBorder(15, 20, 15, 20)
+                BorderFactory.createLineBorder(new Color(230, 230, 230)),
+                BorderFactory.createEmptyBorder(15, 20, 15, 20)
         ));
-        
-        // Crear filas de resumen
+
         JPanel filaSubtotal = crearFilaResumen("Subtotal:", "$ ...");
         JPanel filaIva = crearFilaResumen("IVA (15%):", "$ ...");
         JPanel filaTotal = crearFilaResumen("Total:", "$ ...");
-        
-        // Inicializar los labels
+
         lblSubtotal = (JLabel) filaSubtotal.getComponent(1);
         lblIva = (JLabel) filaIva.getComponent(1);
         lblTotal = (JLabel) filaTotal.getComponent(1);
-        
+
         panelValores.add(filaSubtotal);
         panelValores.add(Box.createVerticalStrut(8));
         panelValores.add(filaIva);
         panelValores.add(Box.createVerticalStrut(8));
         panelValores.add(filaTotal);
-        
+
         JPanel panelContenedor = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 10));
         panelContenedor.setBackground(Color.WHITE);
         panelContenedor.add(panelValores);
-        
+
         panel.add(panelContenedor, BorderLayout.CENTER);
-        
+
         return panel;
     }
-    
+
     private JPanel crearFilaResumen(String titulo, String valor) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         panel.setBackground(new Color(245, 247, 250));
         panel.setMaximumSize(new Dimension(300, 25));
-        
+
         JLabel lblTitulo = new JLabel(titulo);
         lblTitulo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lblTitulo.setForeground(new Color(80, 80, 80));
         lblTitulo.setPreferredSize(new Dimension(100, 25));
-        
+
         JLabel lblValor = new JLabel(valor);
         lblValor.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lblValor.setForeground(new Color(100, 100, 100));
-        
+
         panel.add(lblTitulo);
         panel.add(lblValor);
-        
+
         return panel;
     }
-    
-    // Clase para renderizar botones en la tabla
+
     class ButtonRenderer extends JButton implements javax.swing.table.TableCellRenderer {
         public ButtonRenderer(String text, Color bgColor) {
             setText(text);
@@ -396,23 +363,21 @@ public class ModificarFacturaGUI extends JFrame {
             setBorderPainted(false);
             setCursor(new Cursor(Cursor.HAND_CURSOR));
         }
-        
+
         public Component getTableCellRendererComponent(JTable table, Object value,
-                boolean isSelected, boolean hasFocus, int row, int column) {
+                                                       boolean isSelected, boolean hasFocus, int row, int column) {
             return this;
         }
     }
-    
-    // Clase para editar (hacer clic en) botones en la tabla
+
     class ButtonEditor extends DefaultCellEditor {
         protected JButton button;
         private String label;
         private boolean isPushed;
-        private ModificarFacturaGUI parent;
+        private ModificarCompraGUI parent;
         private int editingRow = -1;
-        private boolean isDeleting = false; 
 
-        public ButtonEditor(JCheckBox checkBox, ModificarFacturaGUI parent, String label) {
+        public ButtonEditor(JCheckBox checkBox, ModificarCompraGUI parent, String label) {
             super(checkBox);
             this.parent = parent;
             this.label = label;
@@ -428,33 +393,22 @@ public class ModificarFacturaGUI extends JFrame {
             button.setBorderPainted(false);
             button.setCursor(new Cursor(Cursor.HAND_CURSOR));
             button.addActionListener(e -> {
-                isPushed = true;
-
-                if (label.equals("Eliminar")) {
-                    isDeleting = true;
-                }
-
-                executeAction();
-
-                if (!isDeleting) {
-                    stopCellEditing();
-                } else {
-                    cancelCellEditing();
-                }
-            });
+            final int row = editingRow;
+            isPushed = true;
+            ButtonEditor.super.stopCellEditing();
+            SwingUtilities.invokeLater(() -> executeAction(row));
+        });
         }
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
-                boolean isSelected, int row, int column) {
+                                                     boolean isSelected, int row, int column) {
             editingRow = row;
             isPushed = false;
-            isDeleting = false; 
             return button;
         }
 
-        private void executeAction() {
-            int row = editingRow;
+        private void executeAction(int row) {
             if (row >= 0 && row < tablaDetalles.getRowCount()) {
                 if (label.equals("+")) {
                     parent.incrementarCantidad(row);
@@ -476,177 +430,142 @@ public class ModificarFacturaGUI extends JFrame {
         public boolean stopCellEditing() {
             isPushed = false;
             editingRow = -1;
-            isDeleting = false; // Reset
             return super.stopCellEditing();
         }
-
-        @Override
-        protected void fireEditingStopped() {
-            if (!isDeleting) {
-                super.fireEditingStopped();
-            }
-        }
-
-        @Override
-        public void cancelCellEditing() {
-            isPushed = false;
-            editingRow = -1;
-            isDeleting = false;
-            super.cancelCellEditing();
-        }
     }
-    
-    private void cargarDatosFactura() {
+
+    private void cargarDatosCompra() {
         try {
-            // Cargar cabecera
-            Facturas factura = Facturas.obtenerFacturaPorId(idFacturaActual);
-            
-            if (factura != null) {
-                txtIdFactura.setText(factura.getIdFactura());
-                txtDescripcion.setText(factura.getFacDescripcion());
-                txtEstado.setText(factura.getEstadoFac());
-                
-                // Guardar el ID del cliente original
-                idClienteOriginal = factura.getIdCliente();
-                
-                // Seleccionar el cliente en el ComboBox
-                for (int i = 0; i < cmbCliente.getItemCount(); i++) {
-                    ClienteItem item = cmbCliente.getItemAt(i);
-                    if (item.getId().equals(factura.getIdCliente())) {
-                        cmbCliente.setSelectedIndex(i);
+            Compras compra = Compras.obtenerOrdenCompraPorId(idCompraActual);
+
+            if (compra != null) {
+                txtIdCompra.setText(compra.getIdCompra());
+                txtEstado.setText(compra.getEstadoOc());
+
+                idProveedorOriginal = compra.getIdProveedor();
+
+                for (int i = 0; i < cmbProveedor.getItemCount(); i++) {
+                    ProveedorItem item = cmbProveedor.getItemAt(i);
+                    if (item.getId().equals(compra.getIdProveedor())) {
+                        cmbProveedor.setSelectedIndex(i);
                         break;
                     }
                 }
-                
+
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-                if (factura.getFacFechaHora() != null) {
-                    txtFechaEmision.setText(factura.getFacFechaHora().format(formatter));
+                if (compra.getOcFechaHora() != null) {
+                    txtFechaEmision.setText(compra.getOcFechaHora().format(formatter));
                 }
-                
-                if (factura.getFacFechaPago() != null) {
-                    java.util.Date date = java.sql.Date.valueOf(factura.getFacFechaPago());
-                    dcFechaPago.setDate(date);
+
+                if (compra.getOcFechaVenc() != null) {
+                    java.util.Date date = java.sql.Date.valueOf(compra.getOcFechaVenc());
+                    dcFechaVenc.setDate(date);
                 }
             }
-            
-            // Cargar detalles
+
             cargarDetalles();
-            
+
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "No se pudo completar la operación. Intente de nuevo.",
-                "Error",
-                JOptionPane.ERROR_MESSAGE);
+                    "No se pudo completar la operación. Intente de nuevo.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
-    
+
     private void cargarDetalles() {
         try {
-            detallesActuales = Pro_x_Fac.obtenerDetallesFactura(idFacturaActual);
+            detallesActuales = Pro_x_Oc.obtenerDetallesCompra(idCompraActual);
             modeloTabla.setRowCount(0);
-            
-            for (Pro_x_Fac detalle : detallesActuales) {
-                String nombreProducto = Pro_x_Fac.obtenerNombreProducto(detalle.getIdProducto());
-                
+
+            for (Pro_x_Oc detalle : detallesActuales) {
+                String nombreProducto = Pro_x_Oc.obtenerNombreProducto(detalle.getIdProducto());
+
                 Object[] fila = {
-                    detalle.getIdProducto(),
-                    nombreProducto,
-                    detalle.getPxfCantidad(),
-                    String.format("$ %.2f", detalle.getPxfPrecio()),
-                    String.format("$ %.2f", detalle.getPxfSubtotal()),
-                    "+",
-                    "-",
-                    "Eliminar"
+                        detalle.getIdProducto(),
+                        nombreProducto,
+                        detalle.getPxoCantidad(),
+                        String.format("$ %.2f", detalle.getPxoValor()),
+                        String.format("$ %.2f", detalle.getPxoSubtotal()),
+                        "+",
+                        "-",
+                        "Eliminar"
                 };
-                
+
                 modeloTabla.addRow(fila);
             }
-            
+
             calcularTotales();
-            
+
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "No se pudo completar la operación. Intente de nuevo.",
-                "Error",
-                JOptionPane.ERROR_MESSAGE);
+                    "No se pudo completar la operación. Intente de nuevo.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
-    
+
     private void calcularTotales() {
         double subtotal = 0.0;
-        
-        for (Pro_x_Fac detalle : detallesActuales) {
-            subtotal += detalle.getPxfSubtotal();
+
+        for (Pro_x_Oc detalle : detallesActuales) {
+            subtotal += detalle.getPxoSubtotal();
         }
-        
+
         double iva = subtotal * 0.15;
         double total = subtotal + iva;
-        
+
         lblSubtotal.setText(String.format("$ %.2f", subtotal));
         lblIva.setText(String.format("$ %.2f", iva));
         lblTotal.setText(String.format("$ %.2f", total));
     }
     
-
     public void incrementarCantidad(int filaSeleccionada) {
-        if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(this,
+    if (filaSeleccionada == -1) {
+        JOptionPane.showMessageDialog(this,
                 "Debe seleccionar un producto de la tabla",
                 "Advertencia",
                 JOptionPane.WARNING_MESSAGE);
-            return;
+        return;
+    }
+
+    try {
+        String idProducto = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
+        int cantidadActual = (int) modeloTabla.getValueAt(filaSeleccionada, 2);
+        int nuevaCantidad = cantidadActual + 1;
+        
+        for (Pro_x_Oc detalle : detallesActuales) {
+            if (detalle.getIdProducto().equals(idProducto)) {
+                double precioUnitario = detalle.getPxoValor();
+                double nuevoSubtotal = nuevaCantidad * precioUnitario;
+
+                detalle.setPxoCantidad(nuevaCantidad);
+                detalle.setPxoSubtotal(nuevoSubtotal);
+
+                modeloTabla.setValueAt(nuevaCantidad, filaSeleccionada, 2);
+                modeloTabla.setValueAt(String.format("$ %.2f", nuevoSubtotal), filaSeleccionada, 4);
+
+                break;
+            }
         }
 
-        try {
-            String idProducto = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
-            int cantidadActual = (int) modeloTabla.getValueAt(filaSeleccionada, 2);
-            int nuevaCantidad = cantidadActual + 1;
+        calcularTotales();
 
-            // Verificar stock disponible REAL 
-            int stockDisponible = Productos.obtenerStockDisponible(idProducto);
-            if (stockDisponible <= 0) {
-                JOptionPane.showMessageDialog(this,
-                    "Stock insuficiente para incrementar la cantidad",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Buscar el detalle en DP y actualizarlo
-            for (Pro_x_Fac detalle : detallesActuales) {
-                if (detalle.getIdProducto().equals(idProducto)) {
-                    double precioUnitario = detalle.getPxfPrecio();
-                    double nuevoSubtotal = nuevaCantidad * precioUnitario;
-
-                    // Actualizar objeto en DP
-                    detalle.setPxfCantidad(nuevaCantidad);
-                    detalle.setPxfSubtotal(nuevoSubtotal);
-
-                    // Actualizar tabla visual
-                    modeloTabla.setValueAt(nuevaCantidad, filaSeleccionada, 2);
-                    modeloTabla.setValueAt(String.format("$ %.2f", nuevoSubtotal), filaSeleccionada, 4);
-
-                    break;
-                }
-            }
-
-            calcularTotales();
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this,
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this,
                 "No se pudo completar la operación. Intente de nuevo.",
                 "Error",
                 JOptionPane.ERROR_MESSAGE);
-        }
     }
+}
 
     public void decrementarCantidad(int filaSeleccionada) {
 
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(this,
-                "Debe seleccionar un producto de la tabla",
-                "Advertencia",
-                JOptionPane.WARNING_MESSAGE);
+                    "Debe seleccionar un producto de la tabla",
+                    "Advertencia",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -655,26 +574,23 @@ public class ModificarFacturaGUI extends JFrame {
 
             if (cantidadActual <= 1) {
                 JOptionPane.showMessageDialog(this,
-                    "La cantidad mínima es 1. Use el botón 'Eliminar' para quitar el producto.",
-                    "Advertencia",
-                    JOptionPane.WARNING_MESSAGE);
+                        "La cantidad mínima es 1. Use el botón 'Eliminar' para quitar el producto.",
+                        "Advertencia",
+                        JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
             String idProducto = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
             int nuevaCantidad = cantidadActual - 1;
 
-            // Buscar el detalle en DP y actualizarlo
-            for (Pro_x_Fac detalle : detallesActuales) {
+            for (Pro_x_Oc detalle : detallesActuales) {
                 if (detalle.getIdProducto().equals(idProducto)) {
-                    double precioUnitario = detalle.getPxfPrecio();
+                    double precioUnitario = detalle.getPxoValor();
                     double nuevoSubtotal = nuevaCantidad * precioUnitario;
 
-                    // Actualizar objeto en DP
-                    detalle.setPxfCantidad(nuevaCantidad);
-                    detalle.setPxfSubtotal(nuevoSubtotal);
+                    detalle.setPxoCantidad(nuevaCantidad);
+                    detalle.setPxoSubtotal(nuevoSubtotal);
 
-                    // Actualizar tabla visual
                     modeloTabla.setValueAt(nuevaCantidad, filaSeleccionada, 2);
                     modeloTabla.setValueAt(String.format("$ %.2f", nuevoSubtotal), filaSeleccionada, 4);
 
@@ -686,27 +602,27 @@ public class ModificarFacturaGUI extends JFrame {
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "No se pudo completar la operación. Intente de nuevo.",
-                "Error",
-                JOptionPane.ERROR_MESSAGE);
+                    "No se pudo completar la operación. Intente de nuevo.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
     public void eliminarProducto(int filaSeleccionada) {
         if (filaSeleccionada == -1 || filaSeleccionada >= modeloTabla.getRowCount()) {
             JOptionPane.showMessageDialog(this,
-                "Debe seleccionar un producto válido de la tabla",
-                "Advertencia",
-                JOptionPane.WARNING_MESSAGE);
+                    "Debe seleccionar un producto válido de la tabla",
+                    "Advertencia",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         if (modeloTabla.getRowCount() == 1) {
             JOptionPane.showMessageDialog(this,
-                "No se puede eliminar el único producto de la factura.\n" +
-                "Una factura debe tener al menos un producto.",
-                "Operación no permitida",
-                JOptionPane.WARNING_MESSAGE);
+                    "No se puede eliminar el único producto de la orden de compra.\n" +
+                            "Una orden de compra debe tener al menos un producto.",
+                    "Operación no permitida",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -714,121 +630,88 @@ public class ModificarFacturaGUI extends JFrame {
         String nombreProducto = (String) modeloTabla.getValueAt(filaSeleccionada, 1);
 
         int confirmacion = JOptionPane.showConfirmDialog(this,
-            "¿Está seguro que desea eliminar el registro?\n" + nombreProducto,
-            "Confirmar eliminación",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE);
+                "¿Está seguro que desea eliminar el registro?\n" + nombreProducto,
+                "Confirmar eliminación",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
 
         if (confirmacion == JOptionPane.YES_OPTION) {
             try {
-                // Remover de la lista en DP
                 detallesActuales.removeIf(d -> d.getIdProducto().equals(idProducto));
-
-                // Remover de la tabla visual
                 modeloTabla.removeRow(filaSeleccionada);
-
                 calcularTotales();
 
                 JOptionPane.showMessageDialog(this,
-                    "Producto eliminado de la vista. Los cambios se aplicarán al presionar 'Actualizar Factura'.",
-                    "Información",
-                    JOptionPane.INFORMATION_MESSAGE);
+                        "Producto eliminado de la vista. Los cambios se aplicarán al presionar 'Actualizar Orden de Compra'.",
+                        "Información",
+                        JOptionPane.INFORMATION_MESSAGE);
 
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this,
-                    "No se pudo completar la operación. Intente de nuevo.",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                        "No se pudo completar la operación. Intente de nuevo.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     }
-    
-    private void actualizarFactura() {
-        try {
-            // Validar campos
-            if (txtDescripcion.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this,
-                    "La descripción es obligatoria",
-                    "Error de Validación",
-                    JOptionPane.ERROR_MESSAGE);
-                return;
-            }
 
-            if (txtDescripcion.getText().length() > 100) {
+    private void actualizarCompra() {
+        try {
+            if (cmbProveedor.getSelectedItem() == null) {
                 JOptionPane.showMessageDialog(this,
-                    "La descripción excede la longitud permitida (máx. 100 caracteres)",
-                    "Error de Validación",
-                    JOptionPane.ERROR_MESSAGE);
+                        "Debe seleccionar un proveedor",
+                        "Error de Validación",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             if (detallesActuales == null || detallesActuales.isEmpty()) {
                 JOptionPane.showMessageDialog(this,
-                    "Debe haber al menos un producto en el detalle",
-                    "Error de Validación",
-                    JOptionPane.ERROR_MESSAGE);
+                        "Debe haber al menos un producto en el detalle",
+                        "Error de Validación",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            if (cmbCliente.getSelectedItem() == null) {
-                JOptionPane.showMessageDialog(this,
-                    "Debe seleccionar un cliente",
-                    "Error de Validación",
-                    JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            
-            // Validar fecha de pago
-            if (dcFechaPago.getDate() != null) {
-                // Obtener la factura original para comparar con fecha de emisión
-                Facturas facturaOriginal = Facturas.obtenerFacturaPorId(idFacturaActual);
+            if (dcFechaVenc.getDate() != null) {
+                Compras compraOriginal = Compras.obtenerOrdenCompraPorId(idCompraActual);
 
-                if (facturaOriginal != null && facturaOriginal.getFacFechaHora() != null) {
-                    // Convertir fecha de pago seleccionada a LocalDate
-                    java.util.Date fechaUtil = dcFechaPago.getDate();
-                    LocalDate fechaPagoSeleccionada = new java.sql.Date(fechaUtil.getTime()).toLocalDate();
+                if (compraOriginal != null && compraOriginal.getOcFechaHora() != null) {
+                    java.util.Date fechaUtil = dcFechaVenc.getDate();
+                    LocalDate fechaVencimientoSeleccionada = new java.sql.Date(fechaUtil.getTime()).toLocalDate();
+                    LocalDate fechaEmision = compraOriginal.getOcFechaHora();
 
-                    // Obtener la fecha de emisión
-                    LocalDate fechaEmision = facturaOriginal.getFacFechaHora();
-
-                    // Validar que fecha de pago sea mayor o igual a fecha de emisión
-                    if (fechaPagoSeleccionada.isBefore(fechaEmision)) {
+                    if (fechaVencimientoSeleccionada.isBefore(fechaEmision)) {
                         JOptionPane.showMessageDialog(this,
-                            "La fecha de pago no puede ser anterior a la fecha de emisión\n" +
-                            "Fecha de emisión: " + fechaEmision.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "\n" +
-                            "Fecha de pago seleccionada: " + fechaPagoSeleccionada.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-                            "Error de Validación",
-                            JOptionPane.ERROR_MESSAGE);
+                                "La fecha de vencimiento no puede ser anterior a la fecha de emisión\n" +
+                                        "Fecha de emisión: " + fechaEmision.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "\n" +
+                                        "Fecha de vencimiento seleccionada: " + fechaVencimientoSeleccionada.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                                "Error de Validación",
+                                JOptionPane.ERROR_MESSAGE);
                         return;
                     }
                 }
             }
 
-            // PASO 1: Obtener los detalles originales de la BD para comparar
-            List<Pro_x_Fac> detallesOriginales = Pro_x_Fac.obtenerDetallesFactura(idFacturaActual);
+            List<Pro_x_Oc> detallesOriginales = Pro_x_Oc.obtenerDetallesCompra(idCompraActual);
 
-            // PASO 2: Identificar productos eliminados y revertir su stock
-            for (Pro_x_Fac original : detallesOriginales) {
+            for (Pro_x_Oc original : detallesOriginales) {
                 boolean existe = false;
-                for (Pro_x_Fac actual : detallesActuales) {
+                for (Pro_x_Oc actual : detallesActuales) {
                     if (actual.getIdProducto().equals(original.getIdProducto())) {
                         existe = true;
                         break;
                     }
                 }
 
-                // Si el producto original ya no existe, fue eliminado
                 if (!existe) {
-                    // Eliminar de la BD y revertir stock
-                    Pro_x_Fac.eliminarPxf(idFacturaActual, original.getIdProducto());
+                    Pro_x_Oc.eliminarPxo(idCompraActual, original.getIdProducto());
                 }
             }
 
-            // PASO 3: Actualizar cantidades de productos modificados
-            for (Pro_x_Fac actual : detallesActuales) {
-                // Buscar el detalle original correspondiente
-                Pro_x_Fac original = null;
-                for (Pro_x_Fac orig : detallesOriginales) {
+            for (Pro_x_Oc actual : detallesActuales) {
+                Pro_x_Oc original = null;
+                for (Pro_x_Oc orig : detallesOriginales) {
                     if (orig.getIdProducto().equals(actual.getIdProducto())) {
                         original = orig;
                         break;
@@ -836,90 +719,68 @@ public class ModificarFacturaGUI extends JFrame {
                 }
 
                 if (original != null) {
-                    int cantidadOriginal = original.getPxfCantidad();
-                    int cantidadNueva = actual.getPxfCantidad();
+                    int cantidadOriginal = original.getPxoCantidad();
+                    int cantidadNueva = actual.getPxoCantidad();
 
-                    // Si cambió la cantidad
                     if (cantidadOriginal != cantidadNueva) {
-                        int diferencia = cantidadNueva - cantidadOriginal;
-
-                        if (diferencia > 0) {
-                            // Incrementó: descontar más stock
-                            boolean stockActualizado = Productos.actualizarStockPorVenta(actual.getIdProducto(), diferencia);
-                            if (!stockActualizado) {
-                                JOptionPane.showMessageDialog(this,
-                                    "Stock insuficiente para el producto: " + actual.getIdProducto(),
-                                    "Error",
-                                    JOptionPane.ERROR_MESSAGE);
-                                return;
-                            }
-                        } else {
-                            // Decrementó: devolver stock
-                            Productos.revertirStockPorVenta(actual.getIdProducto(), Math.abs(diferencia));
-                        }
-
-                        // Actualizar la cantidad en la BD pasando por DP
-                        Pro_x_Fac.actualizarCantidadDetalle(idFacturaActual, actual.getIdProducto(), cantidadNueva);
+                        Pro_x_Oc.modificarPxo(idCompraActual, actual.getIdProducto(), cantidadNueva);
                     }
                 }
             }
 
-            // PASO 4: Actualizar cabecera de la factura
-            Facturas facturaActualizada = new Facturas();
-            facturaActualizada.setIdFactura(idFacturaActual);
-            facturaActualizada.setFacDescripcion(txtDescripcion.getText().trim());
+            Compras compraActualizada = new Compras();
+            compraActualizada.setIdCompra(idCompraActual);
 
-            ClienteItem clienteSeleccionado = (ClienteItem) cmbCliente.getSelectedItem();
-            facturaActualizada.setIdCliente(clienteSeleccionado.getId());
+            ProveedorItem proveedorSeleccionado = (ProveedorItem) cmbProveedor.getSelectedItem();
+            compraActualizada.setIdProveedor(proveedorSeleccionado.getId());
 
-            if (dcFechaPago.getDate() != null) {
-                java.util.Date fechaUtil = dcFechaPago.getDate();
-                LocalDate fechaPago = new java.sql.Date(fechaUtil.getTime()).toLocalDate();
-                facturaActualizada.setFacFechaPago(fechaPago);
+            if (dcFechaVenc.getDate() != null) {
+                java.util.Date fechaUtil = dcFechaVenc.getDate();
+                LocalDate fechaVenc = new java.sql.Date(fechaUtil.getTime()).toLocalDate();
+                compraActualizada.setOcFechaVenc(fechaVenc);
             }
 
-            // Calcular totales finales
             double subtotal = 0.0;
-            for (Pro_x_Fac detalle : detallesActuales) {
-                subtotal += detalle.getPxfSubtotal();
+            for (Pro_x_Oc detalle : detallesActuales) {
+                subtotal += detalle.getPxoSubtotal();
             }
             double iva = subtotal * 0.15;
             double total = subtotal + iva;
 
-            facturaActualizada.setFacSubtotal(subtotal);
-            facturaActualizada.setFacIva(iva);
-            facturaActualizada.setFacTotal(total);
+            compraActualizada.setOcSubtotal(subtotal);
+            compraActualizada.setOcIva(iva);
+            compraActualizada.setOcTotal(total);
 
-            boolean resultado = Facturas.modificarFactura(facturaActualizada);
+            boolean resultado = Compras.modificarCompra(compraActualizada);
 
             if (resultado) {
                 JOptionPane.showMessageDialog(this,
-                    "Registro modificado correctamente",
-                    "Éxito",
-                    JOptionPane.INFORMATION_MESSAGE);
-                volverAFacturasGUI();
+                        "Registro modificado correctamente",
+                        "Éxito",
+                        JOptionPane.INFORMATION_MESSAGE);
+                volverAComprasGUI();
             } else {
                 JOptionPane.showMessageDialog(this,
-                    "No se pudo completar la operación. Intente de nuevo.",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                        "No se pudo completar la operación. Intente de nuevo.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "No se pudo completar la operación. Intente de nuevo.",
-                "Error",
-                JOptionPane.ERROR_MESSAGE);
+                    "No se pudo completar la operación. Intente de nuevo.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
-    
+
     private JPanel crearPanelBotonSalir() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
 
         btnSalir = new JButton("Volver");
-        btnSalir.setBackground(new Color(15, 23, 42)); 
+        btnSalir.setBackground(new Color(15, 23, 42));
         btnSalir.setForeground(Color.WHITE);
         btnSalir.setFocusPainted(false);
         btnSalir.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -933,23 +794,24 @@ public class ModificarFacturaGUI extends JFrame {
                     JOptionPane.INFORMATION_MESSAGE
             );
 
-            new FacturasGUI().setVisible(true);
             dispose();
+
+            SwingUtilities.invokeLater(() -> {
+                ComprasGUI comprasGUI = new ComprasGUI();
+                comprasGUI.setVisible(true);
+            });
         });
 
         panel.add(btnSalir);
 
         return panel;
     }
-    
-    private void volverAFacturasGUI() {
-        // Cerrar la ventana actual
-        dispose();
 
-        // Abrir FacturasGUI
+    private void volverAComprasGUI() {
+        dispose();
         SwingUtilities.invokeLater(() -> {
-            FacturasGUI facturasGUI = new FacturasGUI();
-            facturasGUI.setVisible(true);
+            ComprasGUI comprasGUI = new ComprasGUI();
+            comprasGUI.setVisible(true);
         });
     }
 }

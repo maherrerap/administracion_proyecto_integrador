@@ -1,4 +1,4 @@
-package administracion_proyecto_integrador.gui.Facturacion;
+package administracion_proyecto_integrador.gui.Compras;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -6,17 +6,15 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.table.DefaultTableModel;
-import administracion_proyecto_integrador.dp.Facturacion.Facturas;
+import administracion_proyecto_integrador.dp.Compras.Compras;
 import administracion_proyecto_integrador.gui.Inventarios.ProductosGUI;
 import administracion_proyecto_integrador.gui.Facturacion.ClientesGUI;
-import administracion_proyecto_integrador.gui.Compras.ComprasGUI;
-import administracion_proyecto_integrador.gui.Compras.ProveedoresGUI;
 import administracion_proyecto_integrador.gui.Menu_Principal.MenuPrincipal;
+import administracion_proyecto_integrador.gui.Facturacion.FacturasGUI;
 import java.util.List;
 import java.util.ArrayList;
 
-public class FacturasGUI extends JFrame {
+public class ComprasGUI extends JFrame {
 
     // Colores Estandar en la Aplicación
     private static final Color NAVY = new Color(8, 26, 43);
@@ -34,43 +32,35 @@ public class FacturasGUI extends JFrame {
     private int registrosPorPagina = 13;
     private int totalRegistros = 0;
     private int totalPaginas = 0;
-    private List<Facturas> todasLasFacturas = new ArrayList<>();
+    private List<Compras> todasLasCompras = new ArrayList<>();
     
     private boolean enModoBusqueda = false;
     
-    public FacturasGUI() {
-        setTitle("Catálogo de Facturas");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    public ComprasGUI() {
+        setTitle("Catálogo de Órdenes de Compra");
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         
-        // MAXIMIZAR LA VENTANA AL INICIAR
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        // Layout principal
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(Color.WHITE);
         setContentPane(root);
-
-        // Barra superior
+        
         root.add(crearNavbar(), BorderLayout.NORTH);
 
-        // Centro (contenido)
         JPanel content = new JPanel(new BorderLayout());
         content.setBackground(Color.WHITE);
         content.setBorder(new EmptyBorder(18, 18, 18, 18));
         root.add(content, BorderLayout.CENTER);
 
-        // Título + botones superiores
         content.add(crearHeaderContenido(), BorderLayout.NORTH);
 
-        // Tabla
         content.add(crearTabla(), BorderLayout.CENTER);
 
-        // Paginación
         content.add(crearPaginacion(), BorderLayout.SOUTH);
 
-        // Cargar datos desde la base de datos pasando por DP
-        cargarDatosMock();
+        cargarDatosCompras();
     }
 
     private JComponent crearNavbar() {
@@ -229,32 +219,30 @@ public class FacturasGUI extends JFrame {
         this.dispose();
     }
     
-    private void abrirClientesGUI() {
-        new ClientesGUI().setVisible(true);
-        this.dispose();
-    }
-
     private void abrirProductos() {
-        // Cerrar la ventana actual de facturas
         this.dispose();
-
-        // Abrir la ventana de productos
+        
         SwingUtilities.invokeLater(() -> {
             ProductosGUI productosGUI = new ProductosGUI();
             productosGUI.setVisible(true);
         });
     }
-
+    
+    private void abrirClientesGUI() {
+        new ClientesGUI().setVisible(true);
+        this.dispose();
+    }
+    
     private void abrirMenuPrincipal() {
         new MenuPrincipal().setVisible(true);
         this.dispose();
     }
     
+
     private JComponent crearHeaderContenido() {
         JPanel top = new JPanel(new BorderLayout());
         top.setOpaque(false);
 
-        // Panel izquierdo con barra azul y título
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         leftPanel.setOpaque(false);
 
@@ -262,7 +250,7 @@ public class FacturasGUI extends JFrame {
         barra.setBackground(AZUL_VER);
         barra.setPreferredSize(new Dimension(5, 30));
 
-        JLabel titulo = new JLabel(" Catálogo de Facturas");
+        JLabel titulo = new JLabel(" Catálogo de Órdenes de Compra");
         titulo.setFont(new Font("SansSerif", Font.BOLD, 22));
         titulo.setForeground(new Color(20, 20, 20));
 
@@ -271,17 +259,16 @@ public class FacturasGUI extends JFrame {
 
         top.add(leftPanel, BorderLayout.WEST);
 
-        // Panel derecho con botones de acción
         JPanel acciones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
         acciones.setOpaque(false);
 
         JButton btnRecargar = crearBotonSuperior("Recargar");
         JButton btnConsulta = crearBotonSuperior("Consulta Por Parametro");
-        JButton btnCrear = crearBotonSuperior("Crear Factura");
+        JButton btnCrear = crearBotonSuperior("Crear Orden");
 
-        btnRecargar.addActionListener(e -> recargarDatos());
+        btnRecargar.addActionListener(e -> recargarDatosCompras());
         btnConsulta.addActionListener(e -> onConsultaPorParametro());
-        btnCrear.addActionListener(e -> onCrearFactura());
+        btnCrear.addActionListener(e -> onCrearOrden());
 
         acciones.add(btnRecargar);
         acciones.add(btnConsulta);
@@ -310,14 +297,14 @@ public class FacturasGUI extends JFrame {
 
     private JComponent crearTabla() {
         String[] cols = {
-                "Factura", "Cliente", "Descripción", "Fecha Emisión", "Fecha Pago",
+                "Orden Compra", "Proveedor", "Fecha Emisión", "Fecha Venc.",
                 "Subtotal", "IVA", "Total",
                 "Ver", "Editar", "Inhabilitar"
         };
 
         modelo = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int row, int col) {
-                return col >= 8;
+                return col >= 7;
             }
         };
 
@@ -332,25 +319,29 @@ public class FacturasGUI extends JFrame {
 
         DefaultTableCellRenderer center = new DefaultTableCellRenderer();
         center.setHorizontalAlignment(SwingConstants.CENTER);
-        tabla.getColumnModel().getColumn(5).setCellRenderer(center);
-        tabla.getColumnModel().getColumn(6).setCellRenderer(center);
-        tabla.getColumnModel().getColumn(7).setCellRenderer(center);
 
-        configurarColumnaBoton(8, "Ver", AZUL_VER, (row) -> onVer(row));
-        configurarColumnaBoton(9, "Editar", NARANJA_EDITAR, (row) -> onEditar(row));
-        configurarColumnaBoton(10, "Inhabilitar", ROJO_INH, (row) -> onInhabilitar(row));
+        tabla.getColumnModel().getColumn(0).setCellRenderer(center); // Orden Compra
+        tabla.getColumnModel().getColumn(1).setCellRenderer(center); // Proveedor
+        tabla.getColumnModel().getColumn(2).setCellRenderer(center); // Fecha Emisión
+        tabla.getColumnModel().getColumn(3).setCellRenderer(center); // Fecha Venc.
+        tabla.getColumnModel().getColumn(4).setCellRenderer(center); // Subtotal
+        tabla.getColumnModel().getColumn(5).setCellRenderer(center); // IVA
+        tabla.getColumnModel().getColumn(6).setCellRenderer(center); // Total
 
-        tabla.getColumnModel().getColumn(0).setPreferredWidth(80);
-        tabla.getColumnModel().getColumn(1).setPreferredWidth(120);
-        tabla.getColumnModel().getColumn(2).setPreferredWidth(220);
+        configurarColumnaBoton(7, "Ver", AZUL_VER, (row) -> onVer(row));
+        configurarColumnaBoton(8, "Editar", NARANJA_EDITAR, (row) -> onEditar(row));
+        configurarColumnaBoton(9, "Inhabilitar", ROJO_INH, (row) -> onInhabilitar(row));
+
+        tabla.getColumnModel().getColumn(0).setPreferredWidth(100);
+        tabla.getColumnModel().getColumn(1).setPreferredWidth(180);
+        tabla.getColumnModel().getColumn(2).setPreferredWidth(110);
         tabla.getColumnModel().getColumn(3).setPreferredWidth(110);
-        tabla.getColumnModel().getColumn(4).setPreferredWidth(110);
-        tabla.getColumnModel().getColumn(5).setPreferredWidth(90);
-        tabla.getColumnModel().getColumn(6).setPreferredWidth(70);
-        tabla.getColumnModel().getColumn(7).setPreferredWidth(90);
-        tabla.getColumnModel().getColumn(8).setPreferredWidth(70);
-        tabla.getColumnModel().getColumn(9).setPreferredWidth(75);
-        tabla.getColumnModel().getColumn(10).setPreferredWidth(95);
+        tabla.getColumnModel().getColumn(4).setPreferredWidth(90);
+        tabla.getColumnModel().getColumn(5).setPreferredWidth(70);
+        tabla.getColumnModel().getColumn(6).setPreferredWidth(90);
+        tabla.getColumnModel().getColumn(7).setPreferredWidth(70);
+        tabla.getColumnModel().getColumn(8).setPreferredWidth(75);
+        tabla.getColumnModel().getColumn(9).setPreferredWidth(95);
 
         JScrollPane sp = new JScrollPane(tabla);
         sp.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
@@ -398,14 +389,15 @@ public class FacturasGUI extends JFrame {
     }
 
     private void onConsultaPorParametro() {
-        ConsultaFacturasGUI consulta = new ConsultaFacturasGUI(this);
+        ConsultaComprasGUI consulta = new ConsultaComprasGUI(this);
         consulta.setVisible(true);
     }
 
-    private void onCrearFactura() {
-        new CrearFacturaGUI().setVisible(true);
-        this.dispose();
+    private void onCrearOrden() {
+        CrearCompraGUI crearVentana = new CrearCompraGUI(this);
+        crearVentana.setVisible(true);
     }
+
 
     private void onPrimeraPagina() {
         if (paginaActual != 1) {
@@ -440,25 +432,25 @@ public class FacturasGUI extends JFrame {
     }
 
     private void onVer(int row) {
-        String idFactura = String.valueOf(modelo.getValueAt(row, 0));
+        String idCompra = String.valueOf(modelo.getValueAt(row, 0));
+        dispose();
         SwingUtilities.invokeLater(() -> {
-            DetalleFacturaGUI detalleVentana = new DetalleFacturaGUI(idFactura);
+            DetalleCompraGUI detalleVentana = new DetalleCompraGUI(idCompra);
             detalleVentana.setVisible(true);
-            dispose(); 
         });
     }
 
     private void onEditar(int row) {
-        String idFactura = String.valueOf(modelo.getValueAt(row, 0));
+        String idCompra = String.valueOf(modelo.getValueAt(row, 0));
+        dispose();
         SwingUtilities.invokeLater(() -> {
-            ModificarFacturaGUI modificarVentana = new ModificarFacturaGUI(idFactura);
+            ModificarCompraGUI modificarVentana = new ModificarCompraGUI(idCompra);
             modificarVentana.setVisible(true);
-            dispose(); 
         });
     }
 
     private void onInhabilitar(int row) {
-        String idFactura = String.valueOf(modelo.getValueAt(row, 0));
+        String idCompra = String.valueOf(modelo.getValueAt(row, 0));
 
         int opcion = JOptionPane.showConfirmDialog(
                 this,
@@ -470,17 +462,16 @@ public class FacturasGUI extends JFrame {
 
         if (opcion == JOptionPane.YES_OPTION) {
             SwingUtilities.invokeLater(() -> {
-                boolean eliminado = administracion_proyecto_integrador.dp.Facturacion.Facturas
-                        .eliminarFactura(idFactura);
+                boolean eliminado = Compras.inhabilitarOrdenCompraCompleta(idCompra);
 
                 if (eliminado) {
                     JOptionPane.showMessageDialog(
                             this,
-                            "Factura inhabilitada correctamente.",
+                            "Orden de compra inhabilitada correctamente.",
                             "Operación exitosa",
                             JOptionPane.INFORMATION_MESSAGE
                     );
-                    recargarDatos();
+                    recargarDatosCompras();
                 } else {
                     JOptionPane.showMessageDialog(
                             this,
@@ -494,10 +485,10 @@ public class FacturasGUI extends JFrame {
     }
 
 
-    private void cargarDatosMock() {
+    private void cargarDatosCompras() {
         try {
-            todasLasFacturas = Facturas.obtenerFacturas();
-            totalRegistros = todasLasFacturas.size();
+            todasLasCompras = Compras.obtenerCompras();
+            totalRegistros = todasLasCompras.size();
             totalPaginas = (int) Math.ceil((double) totalRegistros / registrosPorPagina);
             if (totalPaginas == 0) totalPaginas = 1;
 
@@ -523,27 +514,29 @@ public class FacturasGUI extends JFrame {
         int fin = Math.min(inicio + registrosPorPagina, totalRegistros);
 
         for (int i = inicio; i < fin; i++) {
-            Facturas f = todasLasFacturas.get(i);
+            Compras c = todasLasCompras.get(i);
+
+            String proveedor = c.getIdProveedor(); 
+            try {
+                proveedor = administracion_proyecto_integrador.md.Compras
+                        .ProveedoresMD.obtenerNombreProveedor(c.getIdProveedor());
+            } catch (Exception ignored) {}
+
             modelo.addRow(new Object[]{
-                    f.getIdFactura(),
-                    f.getIdCliente(),
-                    f.getFacDescripcion(),
-                    f.getFacFechaHora(),
-                    f.getFacFechaPago(),
-                    String.format("%.1f", f.getFacSubtotal()),
-                    String.format("%.2f", f.getFacIva()),
-                    String.format("%.1f", f.getFacTotal()),
+                    c.getIdCompra(),
+                    proveedor,
+                    c.getOcFechaHora(),
+                    c.getOcFechaVenc(),
+                    String.format("%.2f", c.getOcSubtotal()),
+                    String.format("%.2f", c.getOcIva()),
+                    String.format("%.2f", c.getOcTotal()),
                     "Ver", "Editar", "Inhabilitar"
             });
         }
     }
     
-    /**
-     * Método para actualizar la tabla con resultados de búsqueda
-     * Llamado desde ConsultaFacturasGUI
-     */
-    public void actualizarTablaConResultados(List<Facturas> resultados) {
-        todasLasFacturas = resultados;
+    public void actualizarTablaConResultados(List<Compras> resultados) {
+        todasLasCompras = resultados;
         totalRegistros = resultados.size();
         totalPaginas = (int) Math.ceil((double) totalRegistros / registrosPorPagina);
         if (totalPaginas == 0) totalPaginas = 1;
@@ -555,8 +548,8 @@ public class FacturasGUI extends JFrame {
         lblPagina.setText("Página " + paginaActual + " de " + totalPaginas + " (Búsqueda)");
     }
     
-    public void recargarDatos() {
-        cargarDatosMock();
+    public void recargarDatosCompras() {
+        cargarDatosCompras();
     }
 
     interface RowAction {

@@ -4,37 +4,42 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import administracion_proyecto_integrador.gui.Inventarios.ProductosGUI;
+import administracion_proyecto_integrador.gui.Facturacion.ClientesGUI;
+import administracion_proyecto_integrador.gui.Facturacion.FacturasGUI;
+import administracion_proyecto_integrador.gui.Compras.ComprasGUI;
+import administracion_proyecto_integrador.gui.Compras.ProveedoresGUI;
 
 public class MenuPrincipal extends JFrame {
 
-    // Colores del tema
-    private static final Color NAVY = new Color(14, 33, 55);
-    private static final Color AZUL_PRIMARY = new Color(30, 86, 198);
-    private static final Color AZUL_LIGHT = new Color(59, 130, 246);
-    private static final Color GRAY_LIGHT = new Color(243, 244, 246);
-    private static final Color GRAY_TEXT = new Color(55, 65, 81);
-    private static final Color WHITE = Color.WHITE;
+    // Colores Estandar en la Aplicación
+    private static final Color NAVY = new Color(8, 26, 43);
+    private static final Color NAVY_BTN = new Color(14, 33, 55);
+    private static final Color AZUL_VER = new Color(30, 86, 198);
+    private static final Color AZUL_LABEL = new Color(30, 86, 198);
 
     public MenuPrincipal() {
         setTitle("Menú Principal - ColdMarket");
-        setSize(1400, 900);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        // Panel principal
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(WHITE);
+        // Layout principal
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(Color.WHITE);
+        setContentPane(root);
 
-        // Navbar
-        mainPanel.add(crearNavbar(), BorderLayout.NORTH);
+        // Barra superior
+        root.add(crearNavbar(), BorderLayout.NORTH);
 
-        // Contenido con scroll
-        JScrollPane scrollPane = new JScrollPane(crearContenido());
-        scrollPane.setBorder(null);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        // Centro (contenido)
+        JPanel content = new JPanel(new BorderLayout());
+        content.setBackground(Color.WHITE);
+        content.setBorder(new EmptyBorder(40, 40, 40, 40));
+        root.add(content, BorderLayout.CENTER);
 
-        setContentPane(mainPanel);
+        // Contenido principal
+        content.add(crearContenidoPrincipal(), BorderLayout.CENTER);
     }
 
     private JComponent crearNavbar() {
@@ -56,13 +61,13 @@ public class MenuPrincipal extends JFrame {
             logo.setPreferredSize(new Dimension(50, 50));
             left.add(logo);
         } catch (Exception e) {
-            JLabel logo = new JLabel("❄");
+            JLabel logo = new JLabel("C");
             logo.setOpaque(true);
             logo.setBackground(new Color(12, 45, 78));
             logo.setForeground(Color.WHITE);
             logo.setHorizontalAlignment(SwingConstants.CENTER);
             logo.setPreferredSize(new Dimension(50, 50));
-            logo.setFont(new Font("SansSerif", Font.BOLD, 28));
+            logo.setFont(new Font("SansSerif", Font.BOLD, 18));
             left.add(logo);
         }
 
@@ -72,14 +77,8 @@ public class MenuPrincipal extends JFrame {
         menuBar.setBackground(NAVY);
         menuBar.setBorder(BorderFactory.createEmptyBorder());
 
-        // Menú Principal - Ya estamos aquí, así que no hace nada
+        // Menú Principal
         JMenu menuInicio = crearMenu("Menú Principal");
-        menuInicio.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                // Ya estamos en el menú principal
-                System.out.println("Ya estás en el Menú Principal");
-            }
-        });
 
         // Menú Administración con submenús
         JMenu menuAdmin = crearMenu("Administración");
@@ -89,12 +88,12 @@ public class MenuPrincipal extends JFrame {
         subBodega.add(crearMenuItem("Recepciones", null));
 
         JMenu subFacturacion = crearSubMenu("Facturación ▸");
-        subFacturacion.add(crearMenuItem("Clientes", null));
+        subFacturacion.add(crearMenuItem("Clientes", e -> abrirClientesGUI()));
         subFacturacion.add(crearMenuItem("Facturas", e -> abrirFacturasGUI()));
 
         JMenu subCompras = crearSubMenu("Compras ▸");
-        subCompras.add(crearMenuItem("Proveedores", null));
-        subCompras.add(crearMenuItem("Órdenes de Compra", null));
+        subCompras.add(crearMenuItem("Proveedores", e -> navegarAProveedores()));
+        subCompras.add(crearMenuItem("Órdenes de Compra", e -> navegarACompras()));
 
         menuAdmin.add(subBodega);
         menuAdmin.add(subFacturacion);
@@ -104,16 +103,7 @@ public class MenuPrincipal extends JFrame {
         JMenu menuSalir = crearMenu("Salir");
         menuSalir.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                int respuesta = JOptionPane.showConfirmDialog(
-                    MenuPrincipal.this,
-                    "¿Está seguro de que desea salir del sistema?",
-                    "Confirmar Salida",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE
-                );
-                if (respuesta == JOptionPane.YES_OPTION) {
-                    System.exit(0);
-                }
+                System.exit(0);
             }
         });
 
@@ -126,36 +116,7 @@ public class MenuPrincipal extends JFrame {
         
         return nav;
     }
-    
-    private void abrirFacturasGUI() {
-        // Implementar cuando tengas la clase FacturasGUI
-        System.out.println("Abriendo módulo de Facturas...");
-        // new FacturasGUI().setVisible(true);
-        // this.dispose();
-    }
-    
-    private void abrirProductos() {
-        this.dispose();
-        
-        SwingUtilities.invokeLater(() -> {
-            // Asegúrate de tener esta clase importada
-            // administracion_proyecto_integrador.gui.Inventarios.ProductosGUI
-            try {
-                Class<?> productosClass = Class.forName("administracion_proyecto_integrador.gui.Inventarios.ProductosGUI");
-                JFrame productosGUI = (JFrame) productosClass.getDeclaredConstructor().newInstance();
-                productosGUI.setVisible(true);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(null,
-                    "Error al abrir módulo de Productos: " + ex.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
-                // Reabrir el menú principal si falla
-                new MenuPrincipal().setVisible(true);
-            }
-        });
-    }
-    
+
     private JMenu crearMenu(String texto) {
         JMenu menu = new JMenu(texto);
         menu.setForeground(Color.WHITE);
@@ -165,7 +126,7 @@ public class MenuPrincipal extends JFrame {
         menu.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         JPopupMenu popup = menu.getPopupMenu();
-        popup.setBackground(NAVY);
+        popup.setBackground(new Color(14, 33, 55));
         popup.setBorder(BorderFactory.createLineBorder(new Color(40, 60, 80), 1));
 
         return menu;
@@ -176,7 +137,7 @@ public class MenuPrincipal extends JFrame {
         submenu.setForeground(Color.WHITE);
         submenu.setFont(new Font("SansSerif", Font.PLAIN, 13));
         submenu.setOpaque(true);
-        submenu.setBackground(NAVY);
+        submenu.setBackground(new Color(14, 33, 55));
         submenu.setBorderPainted(false);
 
         JPopupMenu popup = submenu.getPopupMenu();
@@ -197,7 +158,7 @@ public class MenuPrincipal extends JFrame {
 
         item.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                item.setBackground(AZUL_PRIMARY);
+                item.setBackground(new Color(30, 86, 198));
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 item.setBackground(new Color(20, 40, 65));
@@ -208,351 +169,175 @@ public class MenuPrincipal extends JFrame {
             item.addActionListener(listener);
         } else {
             item.addActionListener(e -> {
-                JOptionPane.showMessageDialog(MenuPrincipal.this,
-                    "Módulo '" + texto + "' en desarrollo",
-                    "Información",
-                    JOptionPane.INFORMATION_MESSAGE);
+                System.out.println("Click en: " + texto);
             });
         }
 
         return item;
     }
-
-    private JPanel crearContenido() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(WHITE);
-        panel.setBorder(new EmptyBorder(40, 60, 40, 60));
-
-        // Hero Section - Bienvenida
-        panel.add(crearSeccionBienvenida());
-        panel.add(Box.createVerticalStrut(50));
-
-        // Sección Acerca de
-        panel.add(crearSeccionAcerca());
-        panel.add(Box.createVerticalStrut(40));
-
-        // Sección Fundadores
-        panel.add(crearSeccionFundadores());
-        panel.add(Box.createVerticalStrut(40));
-
-        // Sección Módulos del Sistema
-        panel.add(crearSeccionModulos());
-        panel.add(Box.createVerticalStrut(40));
-
-        // Footer
-        panel.add(crearFooter());
-
-        return panel;
+    
+    private void navegarAProveedores() {
+        SwingUtilities.invokeLater(() -> {
+            new ProveedoresGUI().setVisible(true);
+            dispose();
+        });
+    }
+    
+    private void navegarACompras() {
+        new ComprasGUI().setVisible(true);
+        this.dispose();
+    }
+    
+    private void abrirFacturasGUI() {
+        new FacturasGUI().setVisible(true);
+        this.dispose();
+    }
+    
+    private void abrirClientesGUI() {
+        new ClientesGUI().setVisible(true);
+        this.dispose();
     }
 
-    private JPanel crearSeccionBienvenida() {
+    private void abrirProductos() {
+        this.dispose();
+        SwingUtilities.invokeLater(() -> {
+            ProductosGUI productosGUI = new ProductosGUI();
+            productosGUI.setVisible(true);
+        });
+    }
+
+    private JComponent crearContenidoPrincipal() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(WHITE);
-        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300));
+        panel.setOpaque(false);
 
-        // Logo/Ícono (simulado con texto estilizado)
-        JPanel logoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        logoPanel.setBackground(WHITE);
+        // Espaciador superior
+        panel.add(Box.createVerticalStrut(60));
+
+        // Logo/Título principal
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        headerPanel.setOpaque(false);
         
-        JLabel iconoLabel = new JLabel("❄");
-        iconoLabel.setFont(new Font("SansSerif", Font.BOLD, 80));
-        iconoLabel.setForeground(AZUL_PRIMARY);
-        logoPanel.add(iconoLabel);
-        
-        panel.add(logoPanel);
-        panel.add(Box.createVerticalStrut(20));
+        JLabel lblTitulo = new JLabel("ColdMarket");
+        lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 48));
+        lblTitulo.setForeground(NAVY);
+        headerPanel.add(lblTitulo);
+        panel.add(headerPanel);
 
-        // Nombre de la empresa
-        JLabel lblEmpresa = new JLabel("ColdMarket");
-        lblEmpresa.setFont(new Font("SansSerif", Font.BOLD, 48));
-        lblEmpresa.setForeground(NAVY);
-        lblEmpresa.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.add(lblEmpresa);
-
-        panel.add(Box.createVerticalStrut(15));
-
-        // Slogan
-        JLabel lblSlogan = new JLabel("Manteniendo la Calidad al Punto Perfecto");
-        lblSlogan.setFont(new Font("SansSerif", Font.ITALIC, 20));
-        lblSlogan.setForeground(AZUL_PRIMARY);
-        lblSlogan.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.add(lblSlogan);
-
-        panel.add(Box.createVerticalStrut(20));
+        panel.add(Box.createVerticalStrut(10));
 
         // Subtítulo
-        JLabel lblSubtitulo = new JLabel("Sistema Integral de Administración Empresarial");
-        lblSubtitulo.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        lblSubtitulo.setForeground(GRAY_TEXT);
-        lblSubtitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.add(lblSubtitulo);
+        JPanel subtituloPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        subtituloPanel.setOpaque(false);
+        
+        JLabel lblSubtitulo = new JLabel("Sistema de Administración Empresarial");
+        lblSubtitulo.setFont(new Font("SansSerif", Font.PLAIN, 18));
+        lblSubtitulo.setForeground(new Color(80, 80, 80));
+        subtituloPanel.add(lblSubtitulo);
+        panel.add(subtituloPanel);
 
-        return panel;
-    }
+        panel.add(Box.createVerticalStrut(10));
 
-    private JPanel crearSeccionAcerca() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(GRAY_LIGHT);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(229, 231, 235), 1),
+        // Frase descriptiva
+        JPanel frasePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        frasePanel.setOpaque(false);
+        
+        JLabel lblFrase = new JLabel("\"Gestionando el futuro con eficiencia y precisión\"");
+        lblFrase.setFont(new Font("SansSerif", Font.ITALIC, 14));
+        lblFrase.setForeground(AZUL_VER);
+        frasePanel.add(lblFrase);
+        panel.add(frasePanel);
+
+        panel.add(Box.createVerticalStrut(50));
+
+        // Sección de información
+        JPanel infoPanel = new JPanel();
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+        infoPanel.setOpaque(true);
+        infoPanel.setBackground(new Color(245, 248, 250));
+        infoPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
             new EmptyBorder(30, 40, 30, 40)
         ));
-        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300));
+        infoPanel.setMaximumSize(new Dimension(700, 300));
 
-        // Título de la sección
-        JLabel titulo = new JLabel("Acerca de ColdMarket");
-        titulo.setFont(new Font("SansSerif", Font.BOLD, 24));
-        titulo.setForeground(NAVY);
-        titulo.setBorder(new EmptyBorder(0, 0, 20, 0));
+        // Título de información
+        JPanel tituloInfoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        tituloInfoPanel.setOpaque(false);
+        
+        JPanel barraInfo = new JPanel();
+        barraInfo.setBackground(AZUL_VER);
+        barraInfo.setPreferredSize(new Dimension(5, 24));
+        
+        JLabel lblTituloInfo = new JLabel(" Acerca de ColdMarket");
+        lblTituloInfo.setFont(new Font("SansSerif", Font.BOLD, 20));
+        lblTituloInfo.setForeground(NAVY);
+        
+        tituloInfoPanel.add(barraInfo);
+        tituloInfoPanel.add(lblTituloInfo);
+        infoPanel.add(tituloInfoPanel);
+
+        infoPanel.add(Box.createVerticalStrut(20));
 
         // Descripción
-        JTextArea descripcion = new JTextArea(
-            "ColdMarket es una solución empresarial innovadora diseñada para optimizar " +
-            "la gestión de inventarios, facturación y administración de productos. " +
-            "Nuestro sistema permite a las empresas mantener un control preciso de sus " +
-            "operaciones, garantizando eficiencia y calidad en cada proceso.\n\n" +
-            "Con una interfaz intuitiva y herramientas poderosas, facilitamos la toma " +
-            "de decisiones estratégicas y el crecimiento sostenible de tu negocio."
-        );
-        descripcion.setFont(new Font("SansSerif", Font.PLAIN, 15));
-        descripcion.setForeground(GRAY_TEXT);
-        descripcion.setLineWrap(true);
-        descripcion.setWrapStyleWord(true);
-        descripcion.setEditable(false);
-        descripcion.setOpaque(false);
-        descripcion.setBorder(null);
+        JLabel lblDescripcion = new JLabel("<html><div style='width: 600px;'>Sistema integral de administración " +
+                "empresarial diseñado para optimizar la gestión de inventarios, facturación, " +
+                "compras y relaciones comerciales. Desarrollado con tecnología Java Swing.</div></html>");
+        lblDescripcion.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        lblDescripcion.setForeground(new Color(60, 60, 60));
+        lblDescripcion.setAlignmentX(Component.LEFT_ALIGNMENT);
+        infoPanel.add(lblDescripcion);
 
-        JPanel contenedor = new JPanel(new BorderLayout());
-        contenedor.setBackground(GRAY_LIGHT);
-        contenedor.add(titulo, BorderLayout.NORTH);
-        contenedor.add(descripcion, BorderLayout.CENTER);
+        infoPanel.add(Box.createVerticalStrut(25));
 
-        panel.add(contenedor, BorderLayout.CENTER);
+        // Fundadores
+        JLabel lblFundadores = new JLabel("Fundadores:");
+        lblFundadores.setFont(new Font("SansSerif", Font.BOLD, 15));
+        lblFundadores.setForeground(NAVY);
+        lblFundadores.setAlignmentX(Component.LEFT_ALIGNMENT);
+        infoPanel.add(lblFundadores);
 
-        return panel;
-    }
-
-    private JPanel crearSeccionFundadores() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(WHITE);
-        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 400));
-
-        // Título
-        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        headerPanel.setBackground(WHITE);
-        headerPanel.setBorder(new EmptyBorder(0, 0, 25, 0));
-
-        JPanel barra = new JPanel();
-        barra.setBackground(AZUL_PRIMARY);
-        barra.setPreferredSize(new Dimension(5, 32));
-
-        JLabel titulo = new JLabel(" Nuestros Fundadores");
-        titulo.setFont(new Font("SansSerif", Font.BOLD, 26));
-        titulo.setForeground(NAVY);
-
-        headerPanel.add(barra);
-        headerPanel.add(titulo);
-
-        // Grid de fundadores
-        JPanel gridPanel = new JPanel(new GridLayout(2, 2, 20, 20));
-        gridPanel.setBackground(WHITE);
+        infoPanel.add(Box.createVerticalStrut(8));
 
         String[] fundadores = {
-            "Matheo Leonardo Iza Proaño",
-            "María Paulina Astudillo",
-            "José Daniel Zumárraga",
-            "Martín Herrera"
+            "• Matheo Iza",
+            "• José Daniel Zumárraga", 
+            "• María Paulina Astudillo",
+            "• Martín Herrera"
         };
 
-        String[] roles = {
-            "CEO & Fundador",
-            "CFO & Cofundadora",
-            "CTO & Cofundador",
-            "COO & Cofundador"
-        };
-
-        for (int i = 0; i < fundadores.length; i++) {
-            gridPanel.add(crearTarjetaFundador(fundadores[i], roles[i]));
+        for (String fundador : fundadores) {
+            JLabel lblFundador = new JLabel(fundador);
+            lblFundador.setFont(new Font("SansSerif", Font.PLAIN, 14));
+            lblFundador.setForeground(new Color(60, 60, 60));
+            lblFundador.setAlignmentX(Component.LEFT_ALIGNMENT);
+            infoPanel.add(lblFundador);
+            infoPanel.add(Box.createVerticalStrut(4));
         }
 
-        panel.add(headerPanel, BorderLayout.NORTH);
-        panel.add(gridPanel, BorderLayout.CENTER);
+        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        centerPanel.setOpaque(false);
+        centerPanel.add(infoPanel);
+        panel.add(centerPanel);
+
+        panel.add(Box.createVerticalGlue());
+
+        // Footer
+        JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        footerPanel.setOpaque(false);
+        
+        JLabel lblFooter = new JLabel("© 2026 ColdMarket - Todos los derechos reservados");
+        lblFooter.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        lblFooter.setForeground(new Color(120, 120, 120));
+        footerPanel.add(lblFooter);
+        panel.add(footerPanel);
+
+        panel.add(Box.createVerticalStrut(20));
 
         return panel;
     }
 
-    private JPanel crearTarjetaFundador(String nombre, String rol) {
-        JPanel tarjeta = new JPanel();
-        tarjeta.setLayout(new BoxLayout(tarjeta, BoxLayout.Y_AXIS));
-        tarjeta.setBackground(WHITE);
-        tarjeta.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(229, 231, 235), 1),
-            new EmptyBorder(20, 20, 20, 20)
-        ));
-
-        // Ícono de perfil
-        JLabel icono = new JLabel("👤");
-        icono.setFont(new Font("SansSerif", Font.PLAIN, 40));
-        icono.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // Nombre
-        JLabel lblNombre = new JLabel(nombre);
-        lblNombre.setFont(new Font("SansSerif", Font.BOLD, 16));
-        lblNombre.setForeground(NAVY);
-        lblNombre.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // Rol
-        JLabel lblRol = new JLabel(rol);
-        lblRol.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        lblRol.setForeground(AZUL_PRIMARY);
-        lblRol.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        tarjeta.add(icono);
-        tarjeta.add(Box.createVerticalStrut(12));
-        tarjeta.add(lblNombre);
-        tarjeta.add(Box.createVerticalStrut(5));
-        tarjeta.add(lblRol);
-
-        // Efecto hover
-        tarjeta.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                tarjeta.setBackground(GRAY_LIGHT);
-                tarjeta.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                tarjeta.setBackground(WHITE);
-                tarjeta.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
-
-        return tarjeta;
-    }
-
-    private JPanel crearSeccionModulos() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(WHITE);
-        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 350));
-
-        // Título
-        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        headerPanel.setBackground(WHITE);
-        headerPanel.setBorder(new EmptyBorder(0, 0, 25, 0));
-
-        JPanel barra = new JPanel();
-        barra.setBackground(AZUL_PRIMARY);
-        barra.setPreferredSize(new Dimension(5, 32));
-
-        JLabel titulo = new JLabel(" Módulos del Sistema");
-        titulo.setFont(new Font("SansSerif", Font.BOLD, 26));
-        titulo.setForeground(NAVY);
-
-        headerPanel.add(barra);
-        headerPanel.add(titulo);
-
-        // Grid de módulos
-        JPanel gridPanel = new JPanel(new GridLayout(1, 3, 20, 0));
-        gridPanel.setBackground(WHITE);
-
-        gridPanel.add(crearTarjetaModulo("📦", "Inventarios", 
-            "Gestión completa de productos, stock y movimientos"));
-        gridPanel.add(crearTarjetaModulo("🧾", "Facturación", 
-            "Emisión y control de facturas de venta"));
-        gridPanel.add(crearTarjetaModulo("⚙️", "Administración", 
-            "Configuración y gestión del sistema"));
-
-        panel.add(headerPanel, BorderLayout.NORTH);
-        panel.add(gridPanel, BorderLayout.CENTER);
-
-        return panel;
-    }
-
-    private JPanel crearTarjetaModulo(String icono, String nombre, String descripcion) {
-        JPanel tarjeta = new JPanel();
-        tarjeta.setLayout(new BoxLayout(tarjeta, BoxLayout.Y_AXIS));
-        tarjeta.setBackground(AZUL_LIGHT);
-        tarjeta.setBorder(new EmptyBorder(25, 20, 25, 20));
-
-        // Ícono
-        JLabel lblIcono = new JLabel(icono);
-        lblIcono.setFont(new Font("SansSerif", Font.PLAIN, 48));
-        lblIcono.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // Nombre
-        JLabel lblNombre = new JLabel(nombre);
-        lblNombre.setFont(new Font("SansSerif", Font.BOLD, 18));
-        lblNombre.setForeground(WHITE);
-        lblNombre.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // Descripción
-        JTextArea txtDesc = new JTextArea(descripcion);
-        txtDesc.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        txtDesc.setForeground(WHITE);
-        txtDesc.setLineWrap(true);
-        txtDesc.setWrapStyleWord(true);
-        txtDesc.setEditable(false);
-        txtDesc.setOpaque(false);
-        txtDesc.setAlignmentX(Component.CENTER_ALIGNMENT);
-        txtDesc.setBorder(null);
-
-        tarjeta.add(lblIcono);
-        tarjeta.add(Box.createVerticalStrut(15));
-        tarjeta.add(lblNombre);
-        tarjeta.add(Box.createVerticalStrut(10));
-        tarjeta.add(txtDesc);
-
-        return tarjeta;
-    }
-
-    private JPanel crearFooter() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(NAVY);
-        panel.setBorder(new EmptyBorder(30, 40, 30, 40));
-        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
-
-        // Línea separadora
-        JSeparator separator = new JSeparator();
-        separator.setForeground(new Color(75, 85, 99));
-        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
-        panel.add(separator);
-        panel.add(Box.createVerticalStrut(25));
-
-        // Información del sistema
-        JLabel lblVersion = new JLabel("ColdMarket v1.0 - Sistema Integral de Administración");
-        lblVersion.setFont(new Font("SansSerif", Font.BOLD, 14));
-        lblVersion.setForeground(WHITE);
-        lblVersion.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        JLabel lblCopyright = new JLabel("© 2024 ColdMarket. Todos los derechos reservados.");
-        lblCopyright.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        lblCopyright.setForeground(new Color(156, 163, 175));
-        lblCopyright.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        JLabel lblContacto = new JLabel("Contacto: info@coldmarket.com | +593 99 999 9999");
-        lblContacto.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        lblContacto.setForeground(new Color(156, 163, 175));
-        lblContacto.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        panel.add(lblVersion);
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(lblCopyright);
-        panel.add(Box.createVerticalStrut(5));
-        panel.add(lblContacto);
-
-        return panel;
-    }
-
-    // Método main para testing
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            new MenuPrincipal().setVisible(true);
-        });
+        SwingUtilities.invokeLater(() -> new MenuPrincipal().setVisible(true));
     }
 }

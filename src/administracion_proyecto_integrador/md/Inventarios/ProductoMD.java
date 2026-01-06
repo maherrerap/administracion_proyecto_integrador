@@ -521,4 +521,31 @@ public class ProductoMD {
         }
         return lista;
     }
+    
+    // ------------------------------------------------
+    // METODO DE UTILIDAD PARA COMBOBOX DE ID PRODUCTO
+    // -----------------------------------------------
+
+    public static List<String> obtenerIdsProductos() {
+        List<String> lista = new ArrayList<>();
+
+        String sql = "SELECT id_producto " +
+                     "FROM productos " +
+                     "WHERE estado_prod = 'ACT' " +
+                     "ORDER BY pro_descripcion";
+
+        try (Connection conn = ConexionPostgreSQL.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                lista.add(rs.getString("id_producto"));
+            }
+
+        } catch (SQLException e) {
+            System.out.println("No se pudo completar la operación. Intente de nuevo.");
+        }
+
+        return lista;
+    }
 }

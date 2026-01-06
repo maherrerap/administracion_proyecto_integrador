@@ -8,8 +8,8 @@ import administracion_proyecto_integrador.md.Compras.ComprasMD;
 
 public class Compras {
 
-    // ===================== ATRIBUTOS =====================
-
+    // Atributos de la clase Compras
+    
     private String idCompra;
     private String idProveedor;
     private double ocSubtotal;
@@ -22,10 +22,12 @@ public class Compras {
     private double ocSaldo;
     private double ocTotal;
 
-    // ===================== CONSTRUCTORES =====================
-
+    // CONSTRUCTORES
+    
+    // Constructor Vacio
     public Compras() {}
-
+    
+    // Constructor Completo
     public Compras(String idCompra, String idProveedor, double ocSubtotal, double ocIva,
                    String estadoOc, LocalDate ocFechaHora, LocalDate ocFechaVenc,
                    LocalDate ocFechaPronto, double ocPorDescPronto,
@@ -44,8 +46,7 @@ public class Compras {
         this.ocTotal = ocTotal;
     }
 
-    // ===================== GETTERS =====================
-
+    // GETTERS
     public String getIdCompra() { return idCompra; }
     public String getIdProveedor() { return idProveedor; }
     public double getOcSubtotal() { return ocSubtotal; }
@@ -58,8 +59,7 @@ public class Compras {
     public double getOcSaldo() { return ocSaldo; }
     public double getOcTotal() { return ocTotal; }
 
-    // ===================== SETTERS =====================
-
+    // SETTERS
     public void setIdCompra(String idCompra) { this.idCompra = idCompra; }
     public void setIdProveedor(String idProveedor) { this.idProveedor = idProveedor; }
     public void setOcSubtotal(double ocSubtotal) { this.ocSubtotal = ocSubtotal; }
@@ -72,49 +72,71 @@ public class Compras {
     public void setOcSaldo(double ocSaldo) { this.ocSaldo = ocSaldo; }
     public void setOcTotal(double ocTotal) { this.ocTotal = ocTotal; }
 
-    // ===================== MÉTODOS DP =====================
-
-    /** RF2.4.1: Consulta General */
-    public static List<Compras> obtenerCompras() throws Exception {
+    // Métodos de Conexión con DB
+    
+    /**
+     *  RF2.4.1: Consulta General de Órdenes de Compra
+     */
+    
+    public static List<Compras> obtenerCompras() {
         return ComprasMD.obtenerListadoCompras();
     }
 
-    /** RF2.1: Registrar Orden de Compra */
-    public static boolean grabarCompra(Compras compra) {
-        ComprasMD md = new ComprasMD();
-        return md.crearCompra(compra);
-    }
-
-    /** RF2.2: Modificar Orden de Compra */
-    public static boolean modificarCompra(Compras compra) {
-        ComprasMD md = new ComprasMD();
-        return md.modificarCompra(compra);
-    }
-
-    /** RF2.3: Inhabilitar Orden de Compra */
-    public static boolean eliminarCompra(String idCompra) {
-        ComprasMD md = new ComprasMD();
-        return md.eliminarCompra(idCompra);
-    }
-
-    /** RF2.4.2: Consulta por Parámetros */
-    public static List<Compras> obtenerComprasPorParametro(
-            String idCompra,
-            String idProveedor,
-            String estadoOc) {
-
-        ComprasMD md = new ComprasMD();
-        return md.obtenerComprasPorParametro(idCompra, idProveedor, estadoOc);
+    /**
+     * Obtener una orden de compra específica por su ID
+     */
+    public static Compras obtenerOrdenCompraPorId(String idCompra) {
+        return ComprasMD.obtenerCompraPorId(idCompra);
     }
 
     /**
-     * Obtiene el siguiente ID de compra disponible
-     * MISMO patrón que Facturas
+     * RF2.1: Registrar una Orden de Compra
      */
+    public static boolean grabarCompra(Compras compra) {
+        return ComprasMD.crearCompra(compra);
+    }
+
+    /**
+     * RF2.2: Modificación de Orden de Compra
+     */
+    public static boolean modificarCompra(Compras compra) {
+        return ComprasMD.modificarCompra(compra);
+    }
+
+    /**
+     * RF2.3: Inhabilitación de Orden de Compra
+     */
+    public static boolean eliminarOrdenCompra(String idCompra) {
+        return ComprasMD.inhabilitarOrdenCompra(idCompra);
+    }
+    
+    public static boolean inhabilitarOrdenCompraCompleta(String idCompra) {
+        return ComprasMD.inhabilitarOrdenCompraCompleta(idCompra);
+    }
+
+    /**
+     * RF2.4.2: Consulta por Parámetro de Órdenes de Compra
+     */
+    public static List<Compras> obtenerOrdenCompraPorParametro(
+            String idCompra,
+            String idProveedor,
+            String fechaEmision) {
+
+        return ComprasMD.obtenerOrdenCompraPorParametros(
+            idCompra,
+            idProveedor,
+            fechaEmision
+        );
+    }
+
+    // ===================== MÉTODOS PARA LA CREACIÓN DE ORDENES DE COMRPA =====================
+    
+    // GENERAR ID AUTOMÁTICO
     public static String obtenerSiguienteIdCompra() {
         return ComprasMD.generarSiguienteIdCompra();
     }
-
+    
+    
     // ===================== VALIDACIONES =====================
 
     /** Representa un error de validación (Código + Mensaje) */
@@ -135,62 +157,57 @@ public class Compras {
             return codigo + " - " + mensaje;
         }
     }
-
+    
     /**
-     * Verifica los datos de la orden de compra antes de guardarla en BD.
+     * Verifica los datos de la orden de compras antes de guardarlo/modificarlo en BD.
+     * Retorna lista de errores (vacía si todo está bien).
      */
     public List<ErrorValidacion> verificarOc() {
         List<ErrorValidacion> errores = new ArrayList<>();
 
-        final int MAX_ID_COMPRA    = 7;
-        final int MAX_ID_PROV      = 7;
-        final int MAX_ESTADO       = 3;
+        final int MAX_ID_COMPRA = 7;
+        final int MAX_ID_PROVEEDOR = 7;
+        final int MAX_ESTADO = 3;
 
-        String idCompra   = norm(this.idCompra);
+        // Normalización (trim)
+        String idCompra = norm(this.idCompra);
         String idProveedor = norm(this.idProveedor);
-        String estado     = norm(this.estadoOc);
-
-        // V1: obligatorios
+        String estado = norm(this.estadoOc);
+        
+        // ---------------- V1: Campo obligatorio vacío ----------------
         if (isBlank(idCompra))
-            errores.add(err("V1", msgObligatorio("idCompra")));
+            errores.add(err("V1", "El campo idCompra es obligatorio."));
 
         if (isBlank(idProveedor))
-            errores.add(err("V1", msgObligatorio("proveedor")));
+            errores.add(err("V1", "El campo proveedor es obligatorio."));
 
         if (isBlank(estado))
-            errores.add(err("V1", msgObligatorio("estado")));
+            errores.add(err("V1", "El campo estado es obligatorio."));
 
-        // V2: longitud
+        // ---------------- V2: Longitud máxima excedida ----------------
         if (!isBlank(idCompra) && idCompra.length() != MAX_ID_COMPRA)
-            errores.add(err("V2", msgLongitud("idCompra")));
+            errores.add(err("V2", "El campo idCompra no tiene la longitud permitida."));
 
-        if (!isBlank(idProveedor) && idProveedor.length() != MAX_ID_PROV)
-            errores.add(err("V2", msgLongitud("proveedor")));
-
-        if (!isBlank(estado) && estado.length() > MAX_ESTADO)
-            errores.add(err("V2", msgLongitud("estado")));
-
-        // V7: fechas
-        if (this.ocFechaHora != null && this.ocFechaVenc != null
-                && this.ocFechaVenc.isBefore(this.ocFechaHora)) {
-            errores.add(err("V7", "La fecha de vencimiento no es válida."));
+        if (!isBlank(idProveedor) && idProveedor.length() != MAX_ID_PROVEEDOR)
+            errores.add(err("V2", "El campo idProveedor no tiene la longitud permitida."));
+        
+        // ---------------- V7: Formato no Válido de Fecha ----------------
+        if (this.ocFechaHora != null && this.ocFechaVenc != null &&
+            this.ocFechaVenc.isBefore(this.ocFechaHora)) {
+            errores.add(err("V7", "La fecha ingresada no es válida."));
         }
-
+        
+        // ---------------- V10: Precio menor o igual a cero ----------------
+        if (this.ocTotal <= 0) {
+            errores.add(err("V10", "El total debe ser mayor a 0."));
+        }
+        
         return errores;
     }
-
+    
     // ===================== HELPERS =====================
-
     private static ErrorValidacion err(String codigo, String mensaje) {
         return new ErrorValidacion(codigo, mensaje);
-    }
-
-    private static String msgObligatorio(String campo) {
-        return "El campo " + campo + " es obligatorio.";
-    }
-
-    private static String msgLongitud(String campo) {
-        return "El campo " + campo + " no tiene la longitud permitida.";
     }
 
     private static String norm(String s) {

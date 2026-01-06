@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FacturasMD {
+    
+    // Metodo de Mapeo de Tabla Facturas
     private static Facturas mapearFacturas (ResultSet rs) throws SQLException {
         Facturas factura = new Facturas();
         
@@ -39,9 +41,9 @@ public class FacturasMD {
         return factura;
     }
     
-    // --------------------
-    // RF5.1: CREAR FACTURA
-    // --------------------
+    // ------------------------
+    // RF5.1: REGISTRAR FACTURA
+    // ------------------------
     
     public boolean crearFactura(Facturas factura) {
         String sql = "INSERT INTO facturas "
@@ -70,9 +72,9 @@ public class FacturasMD {
         }
     }
     
-    // ---------------------------------------
-    // CLASE DE UTILIDAD: VERIFICAR EXISTENCIA
-    // ---------------------------------------
+    // ----------------------------------------
+    // METODO DE UTILIDAD: VERIFICAR EXISTENCIA
+    // ----------------------------------------
     
     public static boolean verificarExistencia(String idFactura) {
         String sql = "SELECT 1 FROM facturas WHERE id_factura = ?";
