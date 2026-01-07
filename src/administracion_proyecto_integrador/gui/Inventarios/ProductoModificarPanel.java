@@ -272,8 +272,8 @@ public class ProductoModificarPanel extends JPanel {
             // Llenar campos con datos del producto
             txtIdProducto.setText(productoActual.getIdProducto());
             txtDescripcion.setText(productoActual.getProDescripcion());
-            txtValorCompra.setText(String.format("%.2f", productoActual.getProValorCompra()));
-            txtPrecioVenta.setText(String.format("%.2f", productoActual.getProPrecioVenta()));
+            txtValorCompra.setText(String.format("%.1f", productoActual.getProValorCompra()));
+            txtPrecioVenta.setText(String.format("%.1f", productoActual.getProPrecioVenta()));
             
             // Campos de solo lectura
             txtSaldoInicial.setText(String.valueOf(productoActual.getProSaldoInicial()));

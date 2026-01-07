@@ -531,7 +531,7 @@ public class FacturasGUI extends JFrame {
                     f.getFacFechaHora(),
                     f.getFacFechaPago(),
                     String.format("%.1f", f.getFacSubtotal()),
-                    String.format("%.2f", f.getFacIva()),
+                    String.format("%.1f", f.getFacIva()),
                     String.format("%.1f", f.getFacTotal()),
                     "Ver", "Editar", "Inhabilitar"
             });

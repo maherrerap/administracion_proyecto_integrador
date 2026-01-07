@@ -527,9 +527,9 @@ public class ComprasGUI extends JFrame {
                     proveedor,
                     c.getOcFechaHora(),
                     c.getOcFechaVenc(),
-                    String.format("%.2f", c.getOcSubtotal()),
-                    String.format("%.2f", c.getOcIva()),
-                    String.format("%.2f", c.getOcTotal()),
+                    String.format("%.1f", c.getOcSubtotal()),
+                    String.format("%.1f", c.getOcIva()),
+                    String.format("%.1f", c.getOcTotal()),
                     "Ver", "Editar", "Inhabilitar"
             });
         }

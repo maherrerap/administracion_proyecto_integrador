@@ -485,8 +485,8 @@ public class ModificarCompraGUI extends JFrame {
                         detalle.getIdProducto(),
                         nombreProducto,
                         detalle.getPxoCantidad(),
-                        String.format("$ %.2f", detalle.getPxoValor()),
-                        String.format("$ %.2f", detalle.getPxoSubtotal()),
+                        String.format("$ %.1f", detalle.getPxoValor()),
+                        String.format("$ %.1f", detalle.getPxoSubtotal()),
                         "+",
                         "-",
                         "Eliminar"
@@ -515,9 +515,9 @@ public class ModificarCompraGUI extends JFrame {
         double iva = subtotal * 0.15;
         double total = subtotal + iva;
 
-        lblSubtotal.setText(String.format("$ %.2f", subtotal));
-        lblIva.setText(String.format("$ %.2f", iva));
-        lblTotal.setText(String.format("$ %.2f", total));
+        lblSubtotal.setText(String.format("$ %.1f", subtotal));
+        lblIva.setText(String.format("$ %.1f", iva));
+        lblTotal.setText(String.format("$ %.1f", total));
     }
     
     public void incrementarCantidad(int filaSeleccionada) {
@@ -543,7 +543,7 @@ public class ModificarCompraGUI extends JFrame {
                 detalle.setPxoSubtotal(nuevoSubtotal);
 
                 modeloTabla.setValueAt(nuevaCantidad, filaSeleccionada, 2);
-                modeloTabla.setValueAt(String.format("$ %.2f", nuevoSubtotal), filaSeleccionada, 4);
+                modeloTabla.setValueAt(String.format("$ %.1f", nuevoSubtotal), filaSeleccionada, 4);
 
                 break;
             }
@@ -592,7 +592,7 @@ public class ModificarCompraGUI extends JFrame {
                     detalle.setPxoSubtotal(nuevoSubtotal);
 
                     modeloTabla.setValueAt(nuevaCantidad, filaSeleccionada, 2);
-                    modeloTabla.setValueAt(String.format("$ %.2f", nuevoSubtotal), filaSeleccionada, 4);
+                    modeloTabla.setValueAt(String.format("$ %.1f", nuevoSubtotal), filaSeleccionada, 4);
 
                     break;
                 }

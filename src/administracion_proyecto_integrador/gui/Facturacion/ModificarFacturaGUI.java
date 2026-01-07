@@ -552,8 +552,8 @@ public class ModificarFacturaGUI extends JFrame {
                     detalle.getIdProducto(),
                     nombreProducto,
                     detalle.getPxfCantidad(),
-                    String.format("$ %.2f", detalle.getPxfPrecio()),
-                    String.format("$ %.2f", detalle.getPxfSubtotal()),
+                    String.format("$ %.1f", detalle.getPxfPrecio()),
+                    String.format("$ %.1f", detalle.getPxfSubtotal()),
                     "+",
                     "-",
                     "Eliminar"
@@ -582,9 +582,9 @@ public class ModificarFacturaGUI extends JFrame {
         double iva = subtotal * 0.15;
         double total = subtotal + iva;
         
-        lblSubtotal.setText(String.format("$ %.2f", subtotal));
-        lblIva.setText(String.format("$ %.2f", iva));
-        lblTotal.setText(String.format("$ %.2f", total));
+        lblSubtotal.setText(String.format("$ %.1f", subtotal));
+        lblIva.setText(String.format("$ %.1f", iva));
+        lblTotal.setText(String.format("$ %.1f", total));
     }
     
 
@@ -624,7 +624,7 @@ public class ModificarFacturaGUI extends JFrame {
 
                     // Actualizar tabla visual
                     modeloTabla.setValueAt(nuevaCantidad, filaSeleccionada, 2);
-                    modeloTabla.setValueAt(String.format("$ %.2f", nuevoSubtotal), filaSeleccionada, 4);
+                    modeloTabla.setValueAt(String.format("$ %.1f", nuevoSubtotal), filaSeleccionada, 4);
 
                     break;
                 }
@@ -676,7 +676,7 @@ public class ModificarFacturaGUI extends JFrame {
 
                     // Actualizar tabla visual
                     modeloTabla.setValueAt(nuevaCantidad, filaSeleccionada, 2);
-                    modeloTabla.setValueAt(String.format("$ %.2f", nuevoSubtotal), filaSeleccionada, 4);
+                    modeloTabla.setValueAt(String.format("$ %.1f", nuevoSubtotal), filaSeleccionada, 4);
 
                     break;
                 }
