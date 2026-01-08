@@ -2,7 +2,7 @@ package administracion_proyecto_integrador.dp.Compras;
 
 import java.util.List;
 import java.util.ArrayList;
-
+    
 import administracion_proyecto_integrador.md.Compras.ProveedoresMD;
 
 
