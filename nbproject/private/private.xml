@@ -2,6 +2,33 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Compras/ConsultaComprasGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Facturacion/FacturasGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Inventarios/ProductosGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Facturacion/ConsultaClientesGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Facturacion/DetalleFacturaGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Inventarios/ProductoBusquedaDialog.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Compras/ModificarProveedorGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Facturacion/ModificarClienteGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/md/Compras/ComprasMD.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Compras/ModificarCompraGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Facturacion/ModificarFacturaGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Compras/CrearCompraGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Compras/SeleccionProductoCompraGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Facturacion/CrearFacturaGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/dp/Compras/Proveedores.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Compras/ProveedoresGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Inventarios/ProductoCrearGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Inventarios/ProductoModificarPanel.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Facturacion/SeleccionProductoGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Compras/DetalleCompraGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Facturacion/NuevoClienteGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Facturacion/ClientesGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Facturacion/ConsultaFacturasGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Compras/ComprasGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Compras/ConsultaProveedoresGUI.java</file>
+            <file>file:/F:/Documents/NetBeansProjects/administracion_proyecto_integrador/src/administracion_proyecto_integrador/gui/Compras/NuevoProveedorGUI.java</file>
+        </group>
     </open-files>
 </project-private>

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import administracion_proyecto_integrador.md.Compras.ProveedoresMD;
-import javax.swing.JComboBox;
+
 
 public class Proveedores {
     
